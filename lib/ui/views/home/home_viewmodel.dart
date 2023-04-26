@@ -10,76 +10,77 @@ import 'package:stacked_services/stacked_services.dart';
 
 const String busyFetchingCategories = 'categories';
 const String allCategories = 'All';
+const int productsLimit = 10;
 
 class HomeViewModel extends BaseViewModel {
   final _dialogService = locator<DialogService>();
   final _productService = locator<ProductService>();
 
-  Map<String, List<Product>> _categoryProducts = {allCategories: []};
-  final Map<String, List<Product>> _filteredCategoryProducts = {};
+  List<String> _categories = [];
+  List<String> get categories => _categories;
 
-  List<String> get categories => _categoryProducts.keys.toList();
+  String _searchText = '';
 
-  List<Product> getCategoryProducts(String category) {
-    final products =
-        _filteredCategoryProducts[category] ?? _categoryProducts[category];
+  Future<ProductFetchingResult> getCategoryProducts(
+    String category,
+    int page,
+  ) async {
+    if (category == allCategories) {
+      final result = await _productService.getProducts(
+        limit: productsLimit,
+        skip: page * productsLimit,
+        search: _searchText,
+      );
 
-    if (products == null) {
+      if (!result.success) {
+        _dialogService.showCustomDialog(
+          variant: DialogType.infoAlert,
+          title: 'Oops!',
+          description: 'Something went wrong trying to fetch all the products.',
+        );
+
+        return const ProductFetchingResult();
+      }
+
+      return ProductFetchingResult(
+        products: result.data!,
+        last: result.skip! + result.limit! >= result.total!,
+      );
+    }
+
+    final result = await _productService.getCategoryProducts(
+      category,
+      limit: productsLimit,
+      skip: page * productsLimit,
+    );
+
+    if (!result.success) {
       _dialogService.showCustomDialog(
         variant: DialogType.infoAlert,
         title: 'Oops!',
-        description: 'Something went wrong.',
+        description: 'Something went wrong trying to fetch category products.',
       );
 
-      return [];
+      return const ProductFetchingResult();
     }
 
-    return products;
+    return ProductFetchingResult(
+      products: result.data!
+          .where((element) => element.title.contains(_searchText))
+          .toList(),
+      last: result.skip! + result.limit! >= result.total!,
+    );
   }
 
-  void onTabChanged(int index) {
-    _fetchCategoryProducts(categories[index]);
-  }
+  void onTabChanged(int index) {}
 
   void onSearchTextChanged(String searchText) {
-    for (var catProducts in _categoryProducts.entries) {
-      _filteredCategoryProducts[catProducts.key] = catProducts.value
-          .where((product) => product.title.contains(searchText))
-          .toList();
-    }
-
-    rebuildUi();
-  }
-
-  Future<void> _fetchCategoryProducts(String category) async {
-    if (!busy(category)) {
-      final products = _categoryProducts[category];
-
-      if (products?.isEmpty != false) {
-        final result = await runBusyFuture(
-          _productService.getCategoryProducts(category),
-          busyObject: category,
-        );
-
-        if (!result.success) {
-          _dialogService.showCustomDialog(
-            variant: DialogType.infoAlert,
-            title: 'Oops!',
-            description: 'Something went wrong trying to fetch the categories.',
-          );
-
-          return;
-        }
-
-        _categoryProducts[category] = result.data!;
-
-        rebuildUi();
-      }
-    }
+    _searchText = searchText;
   }
 
   Future<void> _fetchCategories() async {
-    _categoryProducts = {allCategories: []};
+    _categories = [];
+    rebuildUi();
 
     final categoriesResult = await runBusyFuture(
       _productService.getCategories(),
@@ -92,32 +93,29 @@ class HomeViewModel extends BaseViewModel {
         title: 'Oops!',
         description: 'Something went wrong trying to fetch the categories.',
       );
+
+      _categories = [allCategories];
       return;
     }
 
-    for (var category in categoriesResult.data!) {
-      _categoryProducts[category.capitalize()] = [];
-    }
-
-    final productsResult = await runBusyFuture(
-      _productService.getProducts(),
-      busyObject: allCategories,
-    );
-
-    if (!productsResult.success) {
-      _dialogService.showCustomDialog(
-        variant: DialogType.infoAlert,
-        title: 'Oops!',
-        description: 'Something went wrong trying to fetch the products.',
-      );
-      return;
-    }
-
-    _categoryProducts[allCategories] = productsResult.data!;
+    _categories = [
+      allCategories,
+      ...categoriesResult.data!.map((e) => e.capitalize()),
+    ];
   }
 
   Future<void> init() async {
     _fetchCategories();
     rebuildUi();
   }
+}
+
+class ProductFetchingResult {
+  final List<Product>? products;
+  final bool last;
+
+  const ProductFetchingResult({
+    this.products,
+    this.last = false,
+  });
 }

@@ -11,6 +11,7 @@ class HomeAppBar extends AppBar {
     GlobalKey<FormFieldState>? searchFieldKey,
     required bool tabsLoading,
     required List<String> tabsLabels,
+    required VoidCallback onCartButtonPressed,
   }) : super(
           backgroundColor: kcAppBarColor,
           shadowColor: kcAccentColor.withAlpha(120),
@@ -32,7 +33,7 @@ class HomeAppBar extends AppBar {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ShoppingCartAppBarButton(
-                    onPressed: () {},
+                    onPressed: onCartButtonPressed,
                     count: 4,
                   ),
                 ],

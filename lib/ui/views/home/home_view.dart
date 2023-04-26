@@ -1,14 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:stacked/stacked.dart';
+
 import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
-import 'package:stacked/stacked.dart';
 
 import 'home_viewmodel.dart';
+
+final _tabBarViewScreenKey = GlobalKey<_TabBarViewScreenState>();
+final _productsListKey = GlobalKey<_ProductsListState>();
 
 class HomeView extends StackedView<HomeViewModel> {
   const HomeView({super.key});
@@ -16,13 +22,27 @@ class HomeView extends StackedView<HomeViewModel> {
   @override
   Widget builder(BuildContext context, HomeViewModel viewModel, Widget? child) {
     return TabBarViewScreen(
+      key: _tabBarViewScreenKey,
       tabsLoading: viewModel.busy(busyFetchingCategories),
       tabsLabels: viewModel.categories,
-      viewBuilder: (category) => viewModel.busy(category)
-          ? const Center(child: CircularProgressIndicator())
-          : ProductsList(viewModel.getCategoryProducts(category)),
+      views: viewModel.categories
+          .map(
+            (category) => ProductsList(
+              key: category == allCategories
+                  ? _productsListKey
+                  : ValueKey('ProductsList@$category'),
+              fetchPage: (page) =>
+                  viewModel.getCategoryProducts(category, page),
+            ),
+          )
+          .toList(),
       onTabChanged: viewModel.onTabChanged,
-      onSearchTextChanged: viewModel.onSearchTextChanged,
+      onSearchTextChanged: (searchText) {
+        viewModel.onSearchTextChanged(searchText);
+        _tabBarViewScreenKey.currentState!.goToView(0);
+        _productsListKey.currentState!.refresh();
+      },
+      onCartButtonPressed: () {},
     );
   }
 
@@ -37,18 +57,20 @@ class HomeView extends StackedView<HomeViewModel> {
 
 class TabBarViewScreen extends StatefulWidget {
   final List<String> tabsLabels;
-  final Widget Function(String) viewBuilder;
+  final List<Widget> views;
   final bool tabsLoading;
   final void Function(int index) onTabChanged;
   final void Function(String searchText)? onSearchTextChanged;
   final GlobalKey<FormFieldState>? searchFieldKey;
+  final VoidCallback onCartButtonPressed;
 
   const TabBarViewScreen({
     super.key,
     required this.tabsLabels,
-    required this.viewBuilder,
+    required this.views,
     required this.tabsLoading,
     required this.onTabChanged,
+    required this.onCartButtonPressed,
     this.onSearchTextChanged,
     this.searchFieldKey,
   });
@@ -72,6 +94,14 @@ class _TabBarViewScreenState extends State<TabBarViewScreen>
         widget.onTabChanged(_tabController.index);
       }
     });
+  }
+
+  void goToView(int index) {
+    _tabController.animateTo(index);
+  }
+
+  void update() {
+    setState(() {});
   }
 
   @override
@@ -105,38 +135,110 @@ class _TabBarViewScreenState extends State<TabBarViewScreen>
         tabsLabels: widget.tabsLabels,
         onSearchTextChanged: widget.onSearchTextChanged,
         searchFieldKey: widget.searchFieldKey,
+        onCartButtonPressed: widget.onCartButtonPressed,
       ),
       body: TabBarView(
         controller: _tabController,
-        children: widget.tabsLabels.map(widget.viewBuilder).toList(),
+        children: widget.views,
       ),
     );
   }
 }
 
-class ProductsList extends StatelessWidget {
-  final List<Product> products;
+class ProductsList extends StatefulWidget {
+  final Future<ProductFetchingResult> Function(int page) fetchPage;
 
-  const ProductsList(
-    this.products, {
+  const ProductsList({
+    required this.fetchPage,
     super.key,
   });
 
   @override
+  State<ProductsList> createState() => _ProductsListState();
+}
+
+class _ProductsListState extends State<ProductsList> {
+  late final PagingController<int, Product> _pagingController;
+  bool _controllerDisposed = false;
+
+  @override
+  void initState() {
+    _pagingController = PagingController<int, Product>(firstPageKey: 0);
+    _pagingController.addPageRequestListener(_fetchPage);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pagingController.removePageRequestListener(_fetchPage);
+    _pagingController.dispose();
+    _controllerDisposed = true;
+    super.dispose();
+  }
+
+  void refresh() {
+    _pagingController.refresh();
+  }
+
+  Future<void> _fetchPage(int page) async {
+    final result = await widget.fetchPage(page);
+
+    if (!_controllerDisposed) {
+      final products = result.products;
+
+      if (products == null) {
+        _pagingController.error = 'error';
+
+        return;
+      }
+
+      if (result.last) {
+        _pagingController.appendLastPage(products);
+
+        return;
+      }
+
+      _pagingController.appendPage(products, page + 1);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return products.isEmpty
-        ? const Center(child: Text('No products'))
-        : ListView.separated(
-            physics: const BouncingScrollPhysics(),
-            separatorBuilder: (_, __) => const Divider(
-              endIndent: 10,
-              indent: 10,
-              thickness: 0.8,
-              height: 0,
+    return PagedListView<int, Product>.separated(
+      physics: const BouncingScrollPhysics(),
+      separatorBuilder: (_, __) => const Divider(
+        endIndent: 10,
+        indent: 10,
+        thickness: 0.8,
+        height: 0,
+      ),
+      pagingController: _pagingController,
+      builderDelegate: PagedChildBuilderDelegate(
+        animateTransitions: true,
+        itemBuilder: (_, item, __) => ProductItem(
+          item,
+          key: ValueKey('ProductItem#${item.id}'),
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const Center(
+          child: Text('No products found'),
+        ),
+        noMoreItemsIndicatorBuilder: (_) {
+          final length = _pagingController.itemList?.length;
+
+          return Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Center(
+              child: Text(
+                length != null
+                    ? '$length product${length > 1 ? 's' : ''}'
+                    : 'No more products',
+              ),
             ),
-            itemCount: products.length,
-            itemBuilder: (_, index) => ProductItem(products[index]),
           );
+        },
+      ),
+    );
   }
 }
 

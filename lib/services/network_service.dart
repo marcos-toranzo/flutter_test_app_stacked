@@ -86,11 +86,17 @@ class ApiResponse<T> {
   final T? data;
   final bool success;
   final String? errorMessage;
+  final int? total;
+  final int? skip;
+  final int? limit;
 
   const ApiResponse({
     required this.success,
     this.data,
     this.errorMessage,
+    this.total,
+    this.skip,
+    this.limit,
   });
 }
 

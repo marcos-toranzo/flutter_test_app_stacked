@@ -26,13 +26,21 @@ class ProductService {
     return const ApiResponse(success: false);
   }
 
-  Future<ApiResponse<List<Product>>> getProducts({int limit = 0}) async {
+  Future<ApiResponse<List<Product>>> getProducts({
+    int limit = 0,
+    int skip = 0,
+    String search = '',
+  }) async {
     final networkService = locator<NetworkService>();
 
     try {
       final response = await networkService.get(
-        'products',
-        params: {'limit': limit.toString()},
+        'products/search',
+        params: {
+          'limit': limit.toString(),
+          'skip': skip.toString(),
+          'q': search,
+        },
       );
 
       if (response.statusCode == StatusCode.ok) {
@@ -42,7 +50,13 @@ class ProductService {
 
         final products = productsData.map(Product.fromMap).toList();
 
-        return ApiResponse(success: true, data: products);
+        return ApiResponse(
+          success: true,
+          data: products,
+          limit: data['limit'],
+          skip: data['skip'],
+          total: data['total'],
+        );
       }
     } on Exception catch (e) {
       return ApiResponse(
@@ -54,14 +68,20 @@ class ProductService {
     return const ApiResponse(success: false);
   }
 
-  Future<ApiResponse<List<Product>>> getCategoryProducts(String category,
-      {int limit = 0}) async {
+  Future<ApiResponse<List<Product>>> getCategoryProducts(
+    String category, {
+    int limit = 0,
+    int skip = 0,
+  }) async {
     final networkService = locator<NetworkService>();
 
     try {
       final response = await networkService.get(
         'products/category/$category',
-        params: {'limit': limit.toString()},
+        params: {
+          'limit': limit.toString(),
+          'skip': skip.toString(),
+        },
       );
 
       if (response.statusCode == StatusCode.ok) {
@@ -71,7 +91,13 @@ class ProductService {
 
         final products = productsData.map(Product.fromMap).toList();
 
-        return ApiResponse(success: true, data: products);
+        return ApiResponse(
+          success: true,
+          data: products,
+          limit: data['limit'],
+          skip: data['skip'],
+          total: data['total'],
+        );
       }
     } on Exception catch (e) {
       return ApiResponse(
