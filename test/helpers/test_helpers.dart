@@ -2,6 +2,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:stacked_services/stacked_services.dart';
+import 'package:flutter_app_test_stacked/services/product_service.dart';
+import 'package:flutter_app_test_stacked/services/network_service.dart';
 // @stacked-import
 
 import 'test_helpers.mocks.dart';
@@ -10,13 +12,17 @@ import 'test_helpers.mocks.dart';
   MockSpec<NavigationService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<BottomSheetService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<DialogService>(onMissingStub: OnMissingStub.returnDefault),
-  // @stacked-mock-spec
+  MockSpec<ProductService>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<NetworkService>(onMissingStub: OnMissingStub.returnDefault),
+// @stacked-mock-spec
 ])
 void registerServices() {
   getAndRegisterNavigationService();
   getAndRegisterBottomSheetService();
   getAndRegisterDialogService();
-  // @stacked-mock-register
+  getAndRegisterProductService();
+  getAndRegisterNetworkService();
+// @stacked-mock-register
 }
 
 MockNavigationService getAndRegisterNavigationService() {
@@ -69,6 +75,19 @@ MockDialogService getAndRegisterDialogService() {
   return service;
 }
 
+MockProductService getAndRegisterProductService() {
+  _removeRegistrationIfExists<ProductService>();
+  final service = MockProductService();
+  locator.registerSingleton<ProductService>(service);
+  return service;
+}
+
+MockNetworkService getAndRegisterNetworkService() {
+  _removeRegistrationIfExists<NetworkService>();
+  final service = MockNetworkService();
+  locator.registerSingleton<NetworkService>(service);
+  return service;
+}
 // @stacked-mock-create
 
 void _removeRegistrationIfExists<T extends Object>() {

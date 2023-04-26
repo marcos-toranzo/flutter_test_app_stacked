@@ -3,7 +3,6 @@ import 'package:flutter_app_test_stacked/app/app.bottomsheets.dart';
 import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/app/app.router.dart';
-import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 void main() {
@@ -22,10 +21,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: Theme.of(context).copyWith(
-        primaryColor: kcBackgroundColor,
-        focusColor: kcPrimaryColor,
         textTheme: Theme.of(context).textTheme.apply(
-              bodyColor: Colors.black,
+              fontFamily: 'Mulish',
             ),
       ),
       initialRoute: Routes.startupView,
