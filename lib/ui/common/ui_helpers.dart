@@ -10,3 +10,5 @@ const Widget horizontalSpaceSmall = SizedBox(width: _smallSize);
 const Widget verticalSpaceTiny = SizedBox(height: _tinySize);
 const Widget verticalSpaceMedium = SizedBox(height: _mediumSize);
 const Widget verticalSpaceLarge = SizedBox(height: _largeSize);
+
+final circularBorderRadius = BorderRadius.circular(8);

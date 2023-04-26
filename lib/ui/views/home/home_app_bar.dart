@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
+import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 
 class HomeAppBar extends AppBar {
@@ -60,7 +61,7 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
         horizontal: 10,
       ),
       controller: controller,
-      splashBorderRadius: BorderRadius.circular(8),
+      splashBorderRadius: circularBorderRadius,
       isScrollable: true,
       physics: const BouncingScrollPhysics(),
       indicator: const DotIndicator(),
@@ -167,7 +168,7 @@ class SearchBar extends StatelessWidget {
           fillColor: kcAccentColor,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: circularBorderRadius,
           ),
           prefixIcon: const Icon(
             Icons.search,

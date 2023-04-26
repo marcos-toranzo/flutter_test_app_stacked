@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
+import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:stacked/stacked.dart';
@@ -156,12 +157,12 @@ class ProductItem extends StatelessWidget {
         child: Row(
           children: [
             Material(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: circularBorderRadius,
               elevation: 4,
               child: SizedBox.square(
                 dimension: 85,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: circularBorderRadius,
                   child: Image.network(
                     product.thumbnail,
                     fit: BoxFit.cover,
@@ -246,16 +247,16 @@ class ShoppingCartButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: kcAccentColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: circularBorderRadius,
       ),
       height: 45,
       width: 45,
       child: Material(
         color: kcAccentColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: circularBorderRadius,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: circularBorderRadius,
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: CustomIcon.shoppingCart(),
