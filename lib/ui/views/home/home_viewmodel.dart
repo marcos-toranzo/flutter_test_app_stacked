@@ -18,9 +18,6 @@ class HomeViewModel extends BaseViewModel {
   Map<String, List<Product>> _categoryProducts = {allCategories: []};
   List<String> get categories => _categoryProducts.keys.toList();
 
-  bool _listenerAdded = false;
-  bool get listenerAdded => _listenerAdded;
-
   List<Product> getCategoryProducts(String category) {
     final products = _categoryProducts[category];
 
@@ -38,9 +35,7 @@ class HomeViewModel extends BaseViewModel {
   }
 
   void onTabChanged(int index) {
-    _listenerAdded = true;
     _fetchCategoryProducts(categories[index]);
-    rebuildUi();
   }
 
   Future<void> _fetchCategoryProducts(String category) async {

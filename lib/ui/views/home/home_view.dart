@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:stacked/stacked.dart';
 
@@ -18,166 +19,94 @@ class HomeView extends StatelessWidget {
         viewModel.init();
       },
       builder: (_, viewModel, __) {
-        return DefaultTabController(
-          length: viewModel.busy(busyFetchingCategories)
-              ? 1
-              : viewModel.categories.length,
-          child: Builder(builder: (context) {
-            final TabController controller = DefaultTabController.of(context);
-
-            if (!viewModel.listenerAdded) {
-              controller.addListener(() {
-                viewModel.onTabChanged(controller.index);
-              });
-            }
-
-            final List<Widget> tabs = [];
-
-            for (var i = 0; i < viewModel.categories.length; i++) {
-              tabs.add(CategoryTab(
-                text: viewModel.categories[i],
-                selected: i == controller.index,
-              ));
-            }
-
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: kcAppBarColor,
-                shadowColor: kcAccentColor.withAlpha(150),
-                elevation: 10,
-                title: const SearchBar(),
-                actions: [
-                  ShoppingCartAppBarButton(onPressed: () {}),
-                ],
-                bottom: AppTabBar(
-                  loading: viewModel.busy(busyFetchingCategories),
-                  tabs: tabs,
-                ),
-              ),
-              body: TabBarView(
-                children: viewModel.categories
-                    .map((category) => viewModel.busy(category)
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : ProductsList(viewModel.getCategoryProducts(category)))
-                    .toList(),
-              ),
-            );
-          }),
+        return TabBarViewScreen(
+          tabsLoading: viewModel.busy(busyFetchingCategories),
+          tabsLabels: viewModel.categories,
+          length: viewModel.categories.length,
+          views: viewModel.categories
+              .map(
+                (category) => viewModel.busy(category)
+                    ? const Center(child: CircularProgressIndicator())
+                    : ProductsList(viewModel.getCategoryProducts(category)),
+              )
+              .toList(),
+          onTabChanged: viewModel.onTabChanged,
         );
       },
     );
   }
 }
 
-class AppTabBar extends StatelessWidget with PreferredSizeWidget {
-  final List<Widget> tabs;
-  final bool loading;
+class TabBarViewScreen extends StatefulWidget {
+  final List<String> tabsLabels;
+  final List<Widget> views;
+  final int length;
+  final bool tabsLoading;
+  final void Function(int index) onTabChanged;
 
-  const AppTabBar({super.key, required this.tabs, this.loading = false});
+  const TabBarViewScreen({
+    super.key,
+    required this.tabsLabels,
+    required this.views,
+    required this.length,
+    required this.tabsLoading,
+    required this.onTabChanged,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    final tabBar = TabBar(
-      splashBorderRadius: BorderRadius.circular(10),
-      isScrollable: true,
-      physics: const BouncingScrollPhysics(),
-      indicator: const DotIndicator(),
-      tabs: tabs,
+  State<TabBarViewScreen> createState() => _TabBarViewScreenState();
+}
+
+class _TabBarViewScreenState extends State<TabBarViewScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+
+  void _initController() {
+    _tabController = TabController(
+      length: widget.length,
+      vsync: this,
     );
 
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 14.0,
-          ),
-          child: CustomIcon.categoriesMenu(),
-        ),
-        ...(loading
-            ? [
-                tabBar,
-                const Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: LinearProgressIndicator(),
-                    ),
-                  ),
-                ),
-              ]
-            : [Expanded(child: tabBar)]),
-      ],
-    );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        widget.onTabChanged(_tabController.index);
+      }
+    });
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-
-class SearchBar extends StatelessWidget {
-  const SearchBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 10.0,
-        right: 60,
-      ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 0,
-          ),
-          hintStyle: const TextStyle(
-            color: kcTextColor,
-            fontSize: 16,
-          ),
-          isDense: true,
-          filled: true,
-          hintText: 'Search product',
-          fillColor: kcAccentColor,
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: kcBlueGray,
-            size: 23,
-          ),
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    _initController();
   }
-}
 
-class ShoppingCartAppBarButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  @override
+  void didUpdateWidget(covariant TabBarViewScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-  const ShoppingCartAppBarButton({super.key, required this.onPressed});
+    if (oldWidget.length != widget.length) {
+      _tabController.dispose();
+      _initController();
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        right: 20.0,
-        top: 5,
-        bottom: 5,
+    return Scaffold(
+      appBar: HomeAppBar(
+        tabController: _tabController,
+        tabsLoading: widget.tabsLoading,
+        tabsLabels: widget.tabsLabels,
       ),
-      child: TextButton(
-        onPressed: onPressed,
-        child: CustomIcon.shoppingCart(size: 20),
-        style: TextButton.styleFrom(
-          backgroundColor: kcAccentColor,
-          visualDensity: VisualDensity.compact,
-          shape: const CircleBorder(),
-          padding: const EdgeInsets.only(right: 5),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: widget.views,
       ),
     );
   }
@@ -193,7 +122,14 @@ class ProductsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      separatorBuilder: (_, __) => const Divider(
+        endIndent: 10,
+        indent: 10,
+        thickness: 0.8,
+        height: 0,
+      ),
       itemCount: products.length,
       itemBuilder: (_, index) => ProductItem(products[index]),
     );
@@ -210,80 +146,122 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Image.network(product.thumbnail),
-      title: Text(product.description),
-      subtitle: Text(product.price.asCurrency()),
-      trailing: const Icon(Icons.shopping_cart),
-    );
-  }
-}
-
-class CategoryTab extends StatelessWidget {
-  final String text;
-  final bool selected;
-
-  const CategoryTab({super.key, required this.text, required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 14,
+      padding: const EdgeInsets.only(
+        left: 30,
+        right: 25,
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: kcTextColor,
-          fontWeight: selected ? FontWeight.w800 : FontWeight.w400,
-          fontSize: 16,
+      child: SizedBox(
+        height: 120,
+        child: Row(
+          children: [
+            Material(
+              borderRadius: BorderRadius.circular(8),
+              elevation: 4,
+              child: SizedBox.square(
+                dimension: 85,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    product.thumbnail,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 27),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: kcTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          product.price.asCurrency(),
+                          style: const TextStyle(
+                            color: kcTextColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                          ),
+                        ),
+                        if (product.discountPercentage > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 8.0,
+                              bottom: 1.0,
+                            ),
+                            child: Text(
+                              (product.price *
+                                      100 /
+                                      (100 - product.discountPercentage))
+                                  .asCurrency(),
+                              style: const TextStyle(
+                                color: Color(0xFFF76030),
+                                fontSize: 12,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            ShoppingCartButton(
+              onPressed: () {},
+            )
+          ],
         ),
       ),
     );
   }
 }
 
-class DotIndicator extends Decoration {
-  const DotIndicator({
-    this.color = kcTextColor,
-    this.radius = 3.0,
+class ShoppingCartButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const ShoppingCartButton({
+    super.key,
+    required this.onPressed,
   });
-  final Color color;
-  final double radius;
-  @override
-  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
-    return _DotPainter(
-      color: color,
-      radius: radius,
-      onChange: onChanged,
-    );
-  }
-}
-
-class _DotPainter extends BoxPainter {
-  final Paint _paint;
-  final Color color;
-  final double radius;
-
-  _DotPainter({
-    required this.color,
-    required this.radius,
-    VoidCallback? onChange,
-  })  : _paint = Paint()
-          ..color = color
-          ..style = PaintingStyle.fill,
-        super(onChange);
 
   @override
-  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    assert(configuration.size != null);
-
-    final Rect rect = offset & configuration.size!;
-
-    canvas.drawCircle(
-      Offset(rect.centerLeft.dx + 4 + radius, rect.centerLeft.dy),
-      radius,
-      _paint,
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: kcAccentColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      height: 45,
+      width: 45,
+      child: Material(
+        color: kcAccentColor,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: CustomIcon.shoppingCart(),
+          ),
+        ),
+      ),
     );
   }
 }
