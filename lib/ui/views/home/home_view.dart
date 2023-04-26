@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
@@ -9,32 +10,32 @@ import 'package:stacked/stacked.dart';
 
 import 'home_viewmodel.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StackedView<HomeViewModel> {
   const HomeView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ViewModelBuilder<HomeViewModel>.reactive(
-      viewModelBuilder: () => HomeViewModel(),
-      onViewModelReady: (viewModel) {
-        viewModel.init();
-      },
-      builder: (_, viewModel, __) {
-        return TabBarViewScreen(
-          tabsLoading: viewModel.busy(busyFetchingCategories),
-          tabsLabels: viewModel.categories,
-          length: viewModel.categories.length,
-          views: viewModel.categories
-              .map(
-                (category) => viewModel.busy(category)
-                    ? const Center(child: CircularProgressIndicator())
-                    : ProductsList(viewModel.getCategoryProducts(category)),
-              )
-              .toList(),
-          onTabChanged: viewModel.onTabChanged,
-        );
-      },
+  Widget builder(BuildContext context, HomeViewModel viewModel, Widget? child) {
+    return TabBarViewScreen(
+      tabsLoading: viewModel.busy(busyFetchingCategories),
+      tabsLabels: viewModel.categories,
+      length: viewModel.categories.length,
+      views: viewModel.categories
+          .map(
+            (category) => viewModel.busy(category)
+                ? const Center(child: CircularProgressIndicator())
+                : ProductsList(viewModel.getCategoryProducts(category)),
+          )
+          .toList(),
+      onTabChanged: viewModel.onTabChanged,
     );
+  }
+
+  @override
+  HomeViewModel viewModelBuilder(BuildContext context) => HomeViewModel();
+
+  @override
+  void onViewModelReady(HomeViewModel viewModel) {
+    SchedulerBinding.instance.addPostFrameCallback((_) => viewModel.init());
   }
 }
 

@@ -16,6 +16,9 @@ class HomeViewModel extends BaseViewModel {
   final _productService = locator<ProductService>();
 
   Map<String, List<Product>> _categoryProducts = {allCategories: []};
+
+  List<Product> _filteredCategoryProducts = [];
+
   List<String> get categories => _categoryProducts.keys.toList();
 
   List<Product> getCategoryProducts(String category) {
