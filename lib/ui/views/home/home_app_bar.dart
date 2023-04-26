@@ -60,7 +60,7 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
         horizontal: 10,
       ),
       controller: controller,
-      splashBorderRadius: BorderRadius.circular(10),
+      splashBorderRadius: BorderRadius.circular(8),
       isScrollable: true,
       physics: const BouncingScrollPhysics(),
       indicator: const DotIndicator(),
