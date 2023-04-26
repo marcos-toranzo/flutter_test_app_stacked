@@ -16,13 +16,13 @@ class HomeViewModel extends BaseViewModel {
   final _productService = locator<ProductService>();
 
   Map<String, List<Product>> _categoryProducts = {allCategories: []};
-
-  List<Product> _filteredCategoryProducts = [];
+  final Map<String, List<Product>> _filteredCategoryProducts = {};
 
   List<String> get categories => _categoryProducts.keys.toList();
 
   List<Product> getCategoryProducts(String category) {
-    final products = _categoryProducts[category];
+    final products =
+        _filteredCategoryProducts[category] ?? _categoryProducts[category];
 
     if (products == null) {
       _dialogService.showCustomDialog(
@@ -39,6 +39,16 @@ class HomeViewModel extends BaseViewModel {
 
   void onTabChanged(int index) {
     _fetchCategoryProducts(categories[index]);
+  }
+
+  void onSearchTextChanged(String searchText) {
+    for (var catProducts in _categoryProducts.entries) {
+      _filteredCategoryProducts[catProducts.key] = catProducts.value
+          .where((product) => product.title.contains(searchText))
+          .toList();
+    }
+
+    rebuildUi();
   }
 
   Future<void> _fetchCategoryProducts(String category) async {

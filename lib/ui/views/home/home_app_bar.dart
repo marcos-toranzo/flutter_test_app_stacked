@@ -4,16 +4,27 @@ import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 
 class HomeAppBar extends AppBar {
-  HomeAppBar(
-      {super.key,
-      TabController? tabController,
-      required bool tabsLoading,
-      required tabsLabels})
-      : super(
+  HomeAppBar({
+    super.key,
+    TabController? tabController,
+    void Function(String searchText)? onSearchTextChanged,
+    GlobalKey<FormFieldState>? searchFieldKey,
+    required bool tabsLoading,
+    required List<String> tabsLabels,
+  }) : super(
           backgroundColor: kcAppBarColor,
           shadowColor: kcAccentColor.withAlpha(120),
           elevation: 10,
-          title: const SearchBar(),
+          title: Padding(
+            padding: const EdgeInsets.only(
+              left: 10.0,
+              right: 60,
+            ),
+            child: SearchBar(
+              onSearchTextChanged: onSearchTextChanged,
+              searchFieldKey: searchFieldKey,
+            ),
+          ),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 25.0),
@@ -148,37 +159,37 @@ class _DotPainter extends BoxPainter {
 }
 
 class SearchBar extends StatelessWidget {
-  const SearchBar({super.key});
+  final void Function(String searchText)? onSearchTextChanged;
+  final GlobalKey<FormFieldState>? searchFieldKey;
+
+  const SearchBar({
+    super.key,
+    this.onSearchTextChanged,
+    this.searchFieldKey,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 10.0,
-        right: 60,
-      ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 0,
-          ),
-          hintStyle: const TextStyle(
-            color: kcTextColor,
-            fontSize: 16,
-          ),
-          isDense: true,
-          filled: true,
-          hintText: 'Search product',
-          fillColor: kcAccentColor,
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-            borderRadius: circularBorderRadius,
-          ),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: kcBlueGray,
-            size: 23,
-          ),
+    return TextFormField(
+      key: searchFieldKey,
+      onChanged: onSearchTextChanged,
+      decoration: InputDecoration(
+        hintStyle: const TextStyle(
+          color: kcTextColor,
+          fontSize: 16,
+        ),
+        isDense: true,
+        filled: true,
+        hintText: 'Search product',
+        fillColor: kcAccentColor,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: circularBorderRadius,
+        ),
+        prefixIcon: const Icon(
+          Icons.search,
+          color: kcBlueGray,
+          size: 23,
         ),
       ),
     );

@@ -18,15 +18,11 @@ class HomeView extends StackedView<HomeViewModel> {
     return TabBarViewScreen(
       tabsLoading: viewModel.busy(busyFetchingCategories),
       tabsLabels: viewModel.categories,
-      length: viewModel.categories.length,
-      views: viewModel.categories
-          .map(
-            (category) => viewModel.busy(category)
-                ? const Center(child: CircularProgressIndicator())
-                : ProductsList(viewModel.getCategoryProducts(category)),
-          )
-          .toList(),
+      viewBuilder: (category) => viewModel.busy(category)
+          ? const Center(child: CircularProgressIndicator())
+          : ProductsList(viewModel.getCategoryProducts(category)),
       onTabChanged: viewModel.onTabChanged,
+      onSearchTextChanged: viewModel.onSearchTextChanged,
     );
   }
 
@@ -41,18 +37,20 @@ class HomeView extends StackedView<HomeViewModel> {
 
 class TabBarViewScreen extends StatefulWidget {
   final List<String> tabsLabels;
-  final List<Widget> views;
-  final int length;
+  final Widget Function(String) viewBuilder;
   final bool tabsLoading;
   final void Function(int index) onTabChanged;
+  final void Function(String searchText)? onSearchTextChanged;
+  final GlobalKey<FormFieldState>? searchFieldKey;
 
   const TabBarViewScreen({
     super.key,
     required this.tabsLabels,
-    required this.views,
-    required this.length,
+    required this.viewBuilder,
     required this.tabsLoading,
     required this.onTabChanged,
+    this.onSearchTextChanged,
+    this.searchFieldKey,
   });
 
   @override
@@ -65,7 +63,7 @@ class _TabBarViewScreenState extends State<TabBarViewScreen>
 
   void _initController() {
     _tabController = TabController(
-      length: widget.length,
+      length: widget.tabsLabels.length,
       vsync: this,
     );
 
@@ -86,7 +84,7 @@ class _TabBarViewScreenState extends State<TabBarViewScreen>
   void didUpdateWidget(covariant TabBarViewScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.length != widget.length) {
+    if (oldWidget.tabsLabels.length != widget.tabsLabels.length) {
       _tabController.dispose();
       _initController();
     }
@@ -105,10 +103,12 @@ class _TabBarViewScreenState extends State<TabBarViewScreen>
         tabController: _tabController,
         tabsLoading: widget.tabsLoading,
         tabsLabels: widget.tabsLabels,
+        onSearchTextChanged: widget.onSearchTextChanged,
+        searchFieldKey: widget.searchFieldKey,
       ),
       body: TabBarView(
         controller: _tabController,
-        children: widget.views,
+        children: widget.tabsLabels.map(widget.viewBuilder).toList(),
       ),
     );
   }
@@ -124,17 +124,19 @@ class ProductsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      physics: const BouncingScrollPhysics(),
-      separatorBuilder: (_, __) => const Divider(
-        endIndent: 10,
-        indent: 10,
-        thickness: 0.8,
-        height: 0,
-      ),
-      itemCount: products.length,
-      itemBuilder: (_, index) => ProductItem(products[index]),
-    );
+    return products.isEmpty
+        ? const Center(child: Text('No products'))
+        : ListView.separated(
+            physics: const BouncingScrollPhysics(),
+            separatorBuilder: (_, __) => const Divider(
+              endIndent: 10,
+              indent: 10,
+              thickness: 0.8,
+              height: 0,
+            ),
+            itemCount: products.length,
+            itemBuilder: (_, index) => ProductItem(products[index]),
+          );
   }
 }
 
