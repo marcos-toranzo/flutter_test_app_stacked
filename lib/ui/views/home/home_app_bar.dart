@@ -11,17 +11,21 @@ class HomeAppBar extends AppBar {
       required tabsLabels})
       : super(
           backgroundColor: kcAppBarColor,
-          shadowColor: kcAccentColor.withAlpha(150),
+          shadowColor: kcAccentColor.withAlpha(120),
           elevation: 10,
           title: const SearchBar(),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(
-                right: 20.0,
-                top: 5,
-                bottom: 5,
+              padding: const EdgeInsets.only(right: 25.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ShoppingCartAppBarButton(
+                    onPressed: () {},
+                    count: 4,
+                  ),
+                ],
               ),
-              child: ShoppingCartAppBarButton(onPressed: () {}),
             ),
           ],
           bottom: AppTabBar(
@@ -182,25 +186,69 @@ class SearchBar extends StatelessWidget {
 }
 
 class ShoppingCartAppBarButton extends StatelessWidget {
+  final int count;
   final VoidCallback onPressed;
 
   const ShoppingCartAppBarButton({
     super.key,
     required this.onPressed,
+    required this.count,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      child: CustomIcon.shoppingCart(size: 22),
-      style: TextButton.styleFrom(
-        backgroundColor: kcAccentColor,
-        visualDensity: VisualDensity.compact,
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.only(right: 5),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
+    return Stack(
+      alignment: Alignment.topRight,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 5.0),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: kcAccentColor,
+              shape: BoxShape.circle,
+            ),
+            height: 45,
+            width: 45,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: circularBorderRadius,
+              child: InkWell(
+                onTap: onPressed,
+                borderRadius: BorderRadius.circular(100),
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: CustomIcon.shoppingCart(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (count > 0)
+          Padding(
+            padding: const EdgeInsets.only(right: 0.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: kcAccentColor,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 0.5,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text(
+                  count.toString(),
+                  style: const TextStyle(
+                    color: kcTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
