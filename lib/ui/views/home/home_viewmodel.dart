@@ -29,9 +29,6 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> _fetchCategories() async {
-    _categories = [];
-    rebuildUi();
-
     final categoriesResult = await runBusyFuture(
       _productService.getCategories(),
       busyObject: fetchingCategories,
@@ -97,7 +94,7 @@ class HomeViewModel extends BaseViewModel {
   void onProductShoppingCartTap(int productId) {}
 
   void onProductTap(int productId) {
-    _navigationService.navigateToProductView();
+    _navigationService.navigateToProductView(productId: productId);
   }
 
   void onCartButtonPressed() {}

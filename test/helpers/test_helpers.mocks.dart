@@ -765,6 +765,31 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           ),
         )),
       ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
+  @override
+  _i5.Future<_i2.ApiResponse<_i8.Product>> getProduct(int? id) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getProduct,
+          [id],
+        ),
+        returnValue: _i5.Future<_i2.ApiResponse<_i8.Product>>.value(
+            _FakeApiResponse_0<_i8.Product>(
+          this,
+          Invocation.method(
+            #getProduct,
+            [id],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<_i8.Product>>.value(
+                _FakeApiResponse_0<_i8.Product>(
+          this,
+          Invocation.method(
+            #getProduct,
+            [id],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<_i8.Product>>);
 }
 
 /// A class which mocks [NetworkService].
