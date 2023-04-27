@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:stacked/stacked.dart';
 
@@ -26,7 +27,7 @@ class HomeView extends StackedView<HomeViewModel> {
         builder: (context) {
           return Scaffold(
             appBar: HomeAppBar(
-              tabsLoading: viewModel.busy(busyFetchingCategories),
+              tabsLoading: viewModel.busy(fetchingCategories),
               tabsLabels: viewModel.categories,
               onSearchTextChanged: (searchText) {
                 viewModel.onSearchTextChanged(searchText);
@@ -36,20 +37,15 @@ class HomeView extends StackedView<HomeViewModel> {
               onCartButtonPressed: viewModel.onCartButtonPressed,
             ),
             body: TabBarView(
-              children: viewModel.categories
-                  .map(
-                    (category) => ProductsList(
-                      onProductShoppingCartTap:
-                          viewModel.onProductShoppingCartTap,
-                      onProductTap: viewModel.onProductTap,
-                      key: category == allCategories
-                          ? _productsListKey
-                          : ValueKey('ProductsList@$category'),
-                      fetchPage: (page) =>
-                          viewModel.getCategoryProducts(category, page),
-                    ),
-                  )
-                  .toList(),
+              children: viewModel.categories.map((category) {
+                return ProductsList(
+                  onProductShoppingCartTap: viewModel.onProductShoppingCartTap,
+                  onProductTap: viewModel.onProductTap,
+                  key: category == allCategories ? _productsListKey : null,
+                  fetchPage: (page) =>
+                      viewModel.getCategoryProducts(category, page),
+                );
+              }).toList(),
             ),
           );
         },
@@ -158,7 +154,10 @@ class _ProductsListState extends State<ProductsList> {
           final length = _pagingController.itemList?.length;
 
           return Padding(
-            padding: const EdgeInsets.only(top: 12.0),
+            padding: const EdgeInsets.only(
+              top: 12.0,
+              bottom: 30.0,
+            ),
             child: Center(
               child: Text(
                 length != null

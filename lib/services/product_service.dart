@@ -5,11 +5,11 @@ import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 
 class ProductService {
-  Future<ApiResponse<List<String>>> getCategories() async {
-    final networkService = locator<NetworkService>();
+  final _networkService = locator<NetworkService>();
 
+  Future<ApiResponse<List<String>>> getCategories() async {
     try {
-      final response = await networkService.get('products/categories');
+      final response = await _networkService.get('products/categories');
 
       if (response.statusCode == StatusCode.ok) {
         final categories = (json.decode(response.body) as List).cast<String>();
@@ -31,10 +31,8 @@ class ProductService {
     int skip = 0,
     String search = '',
   }) async {
-    final networkService = locator<NetworkService>();
-
     try {
-      final response = await networkService.get(
+      final response = await _networkService.get(
         'products/search',
         params: {
           'limit': limit.toString(),
@@ -73,10 +71,8 @@ class ProductService {
     int limit = 0,
     int skip = 0,
   }) async {
-    final networkService = locator<NetworkService>();
-
     try {
-      final response = await networkService.get(
+      final response = await _networkService.get(
         'products/category/$category',
         params: {
           'limit': limit.toString(),
@@ -97,6 +93,26 @@ class ProductService {
           limit: data['limit'],
           skip: data['skip'],
           total: data['total'],
+        );
+      }
+    } on Exception catch (e) {
+      return ApiResponse(
+        success: false,
+        errorMessage: e.toString(),
+      );
+    }
+
+    return const ApiResponse(success: false);
+  }
+
+  Future<ApiResponse<Product>> getProduct(int id) async {
+    try {
+      final response = await _networkService.get('products/$id');
+
+      if (response.statusCode == StatusCode.ok) {
+        return ApiResponse(
+          success: true,
+          data: Product.fromJson(response.body),
         );
       }
     } on Exception catch (e) {
