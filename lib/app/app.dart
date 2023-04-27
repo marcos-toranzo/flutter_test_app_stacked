@@ -7,6 +7,9 @@ import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart';
+import 'package:flutter_app_test_stacked/ui/views/cart/cart_view.dart';
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
+import 'package:flutter_app_test_stacked/ui/bottom_sheets/custom/custom_sheet.dart';
 // @stacked-import
 
 @StackedApp(
@@ -14,6 +17,7 @@ import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart';
     MaterialRoute(page: HomeView),
     MaterialRoute(page: StartupView),
     MaterialRoute(page: ProductView),
+    MaterialRoute(page: CartView),
 // @stacked-route
   ],
   dependencies: [
@@ -22,11 +26,13 @@ import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart';
     LazySingleton(classType: NavigationService),
     LazySingleton(classType: ProductService),
     LazySingleton(classType: NetworkService),
+    LazySingleton(classType: CartService),
 // @stacked-service
   ],
   bottomsheets: [
     StackedBottomsheet(classType: NoticeSheet),
-    // @stacked-bottom-sheet
+    StackedBottomsheet(classType: CustomSheet),
+// @stacked-bottom-sheet
   ],
   dialogs: [
     StackedDialog(classType: InfoAlertDialog),

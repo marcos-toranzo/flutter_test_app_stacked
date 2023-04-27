@@ -8,6 +8,7 @@ import 'dart:ui' as _i6;
 
 import 'package:flutter/material.dart' as _i4;
 import 'package:flutter_app_test_stacked/models/product.dart' as _i8;
+import 'package:flutter_app_test_stacked/services/cart_service.dart' as _i9;
 import 'package:flutter_app_test_stacked/services/network_service.dart' as _i2;
 import 'package:flutter_app_test_stacked/services/product_service.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
@@ -799,7 +800,7 @@ class MockNetworkService extends _i1.Mock implements _i2.NetworkService {
   @override
   _i5.Future<_i2.NetworkResponse> get(
     String? endpoint, {
-    Map<String, dynamic>? params = const {},
+    Map<String, String>? params = const {},
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -940,4 +941,35 @@ class MockNetworkService extends _i1.Mock implements _i2.NetworkService {
           ),
         )),
       ) as _i5.Future<_i2.NetworkResponse>);
+}
+
+/// A class which mocks [CartService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCartService extends _i1.Mock implements _i9.CartService {
+  @override
+  _i5.Future<_i2.ApiResponse<List<_i8.Product>>> getProducts() =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getProducts,
+          [],
+        ),
+        returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
+            _FakeApiResponse_0<List<_i8.Product>>(
+          this,
+          Invocation.method(
+            #getProducts,
+            [],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
+                _FakeApiResponse_0<List<_i8.Product>>(
+          this,
+          Invocation.method(
+            #getProducts,
+            [],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
 }

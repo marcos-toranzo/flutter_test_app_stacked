@@ -4,6 +4,7 @@ import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
 // @stacked-import
 
 import 'test_helpers.mocks.dart';
@@ -14,6 +15,7 @@ import 'test_helpers.mocks.dart';
   MockSpec<DialogService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<ProductService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<NetworkService>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<CartService>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
 void registerServices() {
@@ -22,6 +24,7 @@ void registerServices() {
   getAndRegisterDialogService();
   getAndRegisterProductService();
   getAndRegisterNetworkService();
+  getAndRegisterCartService();
 // @stacked-mock-register
 }
 
@@ -86,6 +89,13 @@ MockNetworkService getAndRegisterNetworkService() {
   _removeRegistrationIfExists<NetworkService>();
   final service = MockNetworkService();
   locator.registerSingleton<NetworkService>(service);
+  return service;
+}
+
+MockCartService getAndRegisterCartService() {
+  _removeRegistrationIfExists<CartService>();
+  final service = MockCartService();
+  locator.registerSingleton<CartService>(service);
   return service;
 }
 // @stacked-mock-create

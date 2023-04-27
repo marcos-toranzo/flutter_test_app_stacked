@@ -5,15 +5,16 @@
 // **************************************************************************
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:flutter/material.dart' as _i5;
+import 'package:flutter/material.dart' as _i6;
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/ui/views/cart/cart_view.dart' as _i5;
 import 'package:flutter_app_test_stacked/ui/views/home/home_view.dart' as _i2;
 import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart'
     as _i4;
 import 'package:flutter_app_test_stacked/ui/views/startup/startup_view.dart'
     as _i3;
 import 'package:stacked/stacked.dart' as _i1;
-import 'package:stacked_services/stacked_services.dart' as _i6;
+import 'package:stacked_services/stacked_services.dart' as _i7;
 
 class Routes {
   static const homeView = '/home-view';
@@ -22,10 +23,13 @@ class Routes {
 
   static const productView = '/product-view';
 
+  static const cartView = '/cart-view';
+
   static const all = <String>{
     homeView,
     startupView,
     productView,
+    cartView,
   };
 }
 
@@ -43,6 +47,10 @@ class StackedRouter extends _i1.RouterBase {
       Routes.productView,
       page: _i4.ProductView,
     ),
+    _i1.RouteDef(
+      Routes.cartView,
+      page: _i5.CartView,
+    ),
   ];
 
   final _pagesMap = <Type, _i1.StackedRouteFactory>{
@@ -50,22 +58,31 @@ class StackedRouter extends _i1.RouterBase {
       final args = data.getArgs<HomeViewArguments>(
         orElse: () => const HomeViewArguments(),
       );
-      return _i5.MaterialPageRoute<dynamic>(
+      return _i6.MaterialPageRoute<dynamic>(
         builder: (context) => _i2.HomeView(key: args.key),
         settings: data,
       );
     },
     _i3.StartupView: (data) {
-      return _i5.MaterialPageRoute<dynamic>(
+      return _i6.MaterialPageRoute<dynamic>(
         builder: (context) => const _i3.StartupView(),
         settings: data,
       );
     },
     _i4.ProductView: (data) {
       final args = data.getArgs<ProductViewArguments>(nullOk: false);
-      return _i5.MaterialPageRoute<dynamic>(
+      return _i6.MaterialPageRoute<dynamic>(
         builder: (context) =>
             _i4.ProductView(key: args.key, productId: args.productId),
+        settings: data,
+      );
+    },
+    _i5.CartView: (data) {
+      final args = data.getArgs<CartViewArguments>(
+        orElse: () => const CartViewArguments(),
+      );
+      return _i6.MaterialPageRoute<dynamic>(
+        builder: (context) => _i5.CartView(key: args.key),
         settings: data,
       );
     },
@@ -80,7 +97,7 @@ class StackedRouter extends _i1.RouterBase {
 class HomeViewArguments {
   const HomeViewArguments({this.key});
 
-  final _i5.Key? key;
+  final _i6.Key? key;
 
   @override
   String toString() {
@@ -105,7 +122,7 @@ class ProductViewArguments {
     required this.productId,
   });
 
-  final _i5.Key? key;
+  final _i6.Key? key;
 
   final int productId;
 
@@ -126,9 +143,31 @@ class ProductViewArguments {
   }
 }
 
-extension NavigatorStateExtension on _i6.NavigationService {
+class CartViewArguments {
+  const CartViewArguments({this.key});
+
+  final _i6.Key? key;
+
+  @override
+  String toString() {
+    return '{"key": "$key"}';
+  }
+
+  @override
+  bool operator ==(covariant CartViewArguments other) {
+    if (identical(this, other)) return true;
+    return other.key == key;
+  }
+
+  @override
+  int get hashCode {
+    return key.hashCode;
+  }
+}
+
+extension NavigatorStateExtension on _i7.NavigationService {
   Future<dynamic> navigateToHomeView({
-    _i5.Key? key,
+    _i6.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -158,7 +197,7 @@ extension NavigatorStateExtension on _i6.NavigationService {
   }
 
   Future<dynamic> navigateToProductView({
-    _i5.Key? key,
+    _i6.Key? key,
     required int productId,
     int? routerId,
     bool preventDuplicates = true,
@@ -174,8 +213,24 @@ extension NavigatorStateExtension on _i6.NavigationService {
         transition: transition);
   }
 
+  Future<dynamic> navigateToCartView({
+    _i6.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  }) async {
+    return navigateTo<dynamic>(Routes.cartView,
+        arguments: CartViewArguments(key: key),
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
   Future<dynamic> replaceWithHomeView({
-    _i5.Key? key,
+    _i6.Key? key,
     int? routerId,
     bool preventDuplicates = true,
     Map<String, String>? parameters,
@@ -205,7 +260,7 @@ extension NavigatorStateExtension on _i6.NavigationService {
   }
 
   Future<dynamic> replaceWithProductView({
-    _i5.Key? key,
+    _i6.Key? key,
     required int productId,
     int? routerId,
     bool preventDuplicates = true,
@@ -215,6 +270,22 @@ extension NavigatorStateExtension on _i6.NavigationService {
   }) async {
     return replaceWith<dynamic>(Routes.productView,
         arguments: ProductViewArguments(key: key, productId: productId),
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> replaceWithCartView({
+    _i6.Key? key,
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  }) async {
+    return replaceWith<dynamic>(Routes.cartView,
+        arguments: CartViewArguments(key: key),
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,

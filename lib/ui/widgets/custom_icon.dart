@@ -3,14 +3,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomIcon extends StatelessWidget {
   final double? size;
-  final BoxFit fit;
+  final BoxFit? fit;
 
   late final String _name;
 
   CustomIcon.shoppingCart({
     super.key,
     this.size,
-    this.fit = BoxFit.contain,
+    this.fit,
   }) {
     _name = 'shopping_cart';
   }
@@ -18,9 +18,33 @@ class CustomIcon extends StatelessWidget {
   CustomIcon.categoriesMenu({
     super.key,
     this.size,
-    this.fit = BoxFit.contain,
+    this.fit,
   }) {
     _name = 'categories_menu';
+  }
+
+  CustomIcon.back({
+    super.key,
+    this.size,
+    this.fit,
+  }) {
+    _name = 'back';
+  }
+
+  CustomIcon.trash({
+    super.key,
+    this.size,
+    this.fit,
+  }) {
+    _name = 'trash';
+  }
+
+  CustomIcon.receipt({
+    super.key,
+    this.size,
+    this.fit,
+  }) {
+    _name = 'receipt';
   }
 
   @override
@@ -29,7 +53,7 @@ class CustomIcon extends StatelessWidget {
       'assets/icons/$_name.svg',
       height: size,
       width: size,
-      fit: fit,
+      fit: fit ?? BoxFit.scaleDown,
     );
   }
 }

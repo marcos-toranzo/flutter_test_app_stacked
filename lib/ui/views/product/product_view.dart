@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_header.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_price_and_discount.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_images_carousel.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_stock_status.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_fab.dart';
 import 'package:stacked/stacked.dart';
 
 import 'product_viewmodel.dart';
@@ -36,7 +36,12 @@ class ProductView extends StackedView<ProductViewModel> {
           ),
         ],
       ),
-      floatingActionButton: product == null ? null : const _AddToCartFab(),
+      floatingActionButton: product == null
+          ? null
+          : CustomFab(
+              text: 'Add to Cart',
+              onPressed: () {},
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: viewModel.busy(fetchingProduct)
           ? const Center(child: CircularProgressIndicator())
@@ -92,38 +97,5 @@ class ProductView extends StackedView<ProductViewModel> {
   @override
   void onViewModelReady(ProductViewModel viewModel) {
     SchedulerBinding.instance.addPostFrameCallback((_) => viewModel.init());
-  }
-}
-
-class _AddToCartFab extends StatelessWidget {
-  const _AddToCartFab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF47858A),
-            shape: RoundedRectangleBorder(borderRadius: circularBorderRadius),
-          ),
-          onPressed: () {},
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 15),
-            child: Text(
-              'Add to cart',
-              style: TextStyle(
-                fontSize: 20,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

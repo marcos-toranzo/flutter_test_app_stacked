@@ -1,42 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:stacked_services/stacked_services.dart';
-
-class CustomAppBarButton extends StatelessWidget {
-  final IconData iconData;
-  final VoidCallback onPressed;
-
-  const CustomAppBarButton({
-    super.key,
-    required this.iconData,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      height: 44,
-      width: 44,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(100),
-          child: Icon(
-            iconData,
-            color: kcTextColor,
-            size: 25,
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class CustomAppBar extends AppBar {
   CustomAppBar({
@@ -54,22 +21,32 @@ class CustomAppBar extends AppBar {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CustomAppBarButton(
-                  iconData: Icons.navigate_before,
+                  icon: CustomIcon.back(),
                   onPressed: () {
                     locator<NavigationService>().back();
                   },
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Center(
-                    child: Text(
-                      titleText,
-                      style: const TextStyle(
-                        color: kcTextColor,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
+                  child: Column(
+                    children: [
+                      Text(
+                        titleText,
+                        style: const TextStyle(
+                          color: kcTextColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                      if (subtitleText != null)
+                        Text(
+                          subtitleText,
+                          style: const TextStyle(
+                            color: kcTextColor,
+                            fontSize: 14,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -90,4 +67,31 @@ class CustomAppBar extends AppBar {
           titleTextStyle: const TextStyle(),
           automaticallyImplyLeading: false,
         );
+}
+
+class CustomAppBarButton extends StatelessWidget {
+  final CustomIcon? icon;
+  final IconData? iconData;
+  final VoidCallback onPressed;
+
+  const CustomAppBarButton({
+    super.key,
+    this.icon,
+    this.iconData,
+    required this.onPressed,
+  }) : assert(icon != null || iconData != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomButton(
+      backgroundColor: Colors.white,
+      icon: icon ??
+          Icon(
+            iconData,
+            color: kcTextColor,
+            size: 22,
+          ),
+      onPressed: onPressed,
+    );
+  }
 }

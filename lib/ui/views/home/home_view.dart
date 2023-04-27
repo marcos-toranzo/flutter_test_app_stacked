@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/products_list.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
 import 'package:stacked/stacked.dart';
 
-import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
-import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 
@@ -40,7 +39,9 @@ class HomeView extends StackedView<HomeViewModel> {
                   key: category == allCategories ? _productsListKey : null,
                   fetchPage: (page) =>
                       viewModel.getCategoryProducts(category, page),
-                  trailingBuilder: (productId) => _ShoppingCartButton(
+                  trailingBuilder: (productId) => CustomButton(
+                    icon: CustomIcon.shoppingCart(),
+                    circular: false,
                     onPressed: () {
                       viewModel.onProductShoppingCartTap(productId);
                     },
@@ -60,35 +61,5 @@ class HomeView extends StackedView<HomeViewModel> {
   @override
   void onViewModelReady(HomeViewModel viewModel) {
     SchedulerBinding.instance.addPostFrameCallback((_) => viewModel.init());
-  }
-}
-
-class _ShoppingCartButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _ShoppingCartButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: kcAccentColor,
-        borderRadius: circularBorderRadius,
-      ),
-      height: 45,
-      width: 45,
-      child: Material(
-        color: kcAccentColor,
-        borderRadius: circularBorderRadius,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: circularBorderRadius,
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: CustomIcon.shoppingCart(),
-          ),
-        ),
-      ),
-    );
   }
 }

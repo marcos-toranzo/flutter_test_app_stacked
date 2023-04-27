@@ -19,7 +19,7 @@ class HomeViewModel extends BaseViewModel {
   final _navigationService = locator<NavigationService>();
 
   List<String> _categories = [];
-  List<String> get categories => _categories;
+  List<String> get categories => [..._categories];
 
   String _searchText = '';
 
@@ -97,5 +97,7 @@ class HomeViewModel extends BaseViewModel {
     _navigationService.navigateToProductView(productId: productId);
   }
 
-  void onCartButtonPressed() {}
+  void onCartButtonPressed() {
+    _navigationService.navigateToCartView();
+  }
 }

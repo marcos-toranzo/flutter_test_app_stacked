@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';
-import 'package:flutter_app_test_stacked/ui/views/home/product_item.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class ProductsList extends StatefulWidget {

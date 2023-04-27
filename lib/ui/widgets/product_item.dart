@@ -8,11 +8,15 @@ class ProductItem extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
   final Widget? trailing;
+  final bool showDiscount;
+  final double horizontalPadding;
 
   const ProductItem({
     required this.product,
     required this.onTap,
     this.trailing,
+    this.showDiscount = true,
+    this.horizontalPadding = 25,
     super.key,
   });
 
@@ -21,10 +25,7 @@ class ProductItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.only(
-          left: 30,
-          right: 25,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: SizedBox(
           height: 120,
           child: Row(
@@ -72,7 +73,7 @@ class ProductItem extends StatelessWidget {
                               fontSize: 17,
                             ),
                           ),
-                          if (product.discountPercentage > 0)
+                          if (showDiscount && product.discountPercentage > 0)
                             Padding(
                               padding: const EdgeInsets.only(
                                 left: 8.0,

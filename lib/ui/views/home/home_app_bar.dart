@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 
 class HomeAppBar extends AppBar {
@@ -214,25 +215,9 @@ class ShoppingCartAppBarButton extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 5.0),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: kcAccentColor,
-              shape: BoxShape.circle,
-            ),
-            height: 45,
-            width: 45,
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: circularBorderRadius,
-              child: InkWell(
-                onTap: onPressed,
-                borderRadius: BorderRadius.circular(100),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: CustomIcon.shoppingCart(),
-                ),
-              ),
-            ),
+          child: CustomButton(
+            icon: CustomIcon.shoppingCart(),
+            onPressed: onPressed,
           ),
         ),
         if (count > 0)
