@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:flutter_app_test_stacked/app/app.router.dart';
 import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
@@ -15,6 +16,7 @@ const int productsLimit = 10;
 class HomeViewModel extends BaseViewModel {
   final _dialogService = locator<DialogService>();
   final _productService = locator<ProductService>();
+  final _navigationService = locator<NavigationService>();
 
   List<String> _categories = [];
   List<String> get categories => _categories;
@@ -72,8 +74,6 @@ class HomeViewModel extends BaseViewModel {
     );
   }
 
-  void onTabChanged(int index) {}
-
   void onSearchTextChanged(String searchText) {
     _searchText = searchText;
   }
@@ -108,6 +108,14 @@ class HomeViewModel extends BaseViewModel {
     _fetchCategories();
     rebuildUi();
   }
+
+  void onProductShoppingCartTap(int productId) {}
+
+  void onProductTap(int productId) {
+    _navigationService.navigateToProductView();
+  }
+
+  void onCartButtonPressed() {}
 }
 
 class ProductFetchingResult {

@@ -13,36 +13,47 @@ import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 
 import 'home_viewmodel.dart';
 
-final _tabBarViewScreenKey = GlobalKey<_TabBarViewScreenState>();
-final _productsListKey = GlobalKey<_ProductsListState>();
-
 class HomeView extends StackedView<HomeViewModel> {
-  const HomeView({super.key});
+  final _productsListKey = GlobalKey<_ProductsListState>();
+
+  HomeView({super.key});
 
   @override
   Widget builder(BuildContext context, HomeViewModel viewModel, Widget? child) {
-    return TabBarViewScreen(
-      key: _tabBarViewScreenKey,
-      tabsLoading: viewModel.busy(busyFetchingCategories),
-      tabsLabels: viewModel.categories,
-      views: viewModel.categories
-          .map(
-            (category) => ProductsList(
-              key: category == allCategories
-                  ? _productsListKey
-                  : ValueKey('ProductsList@$category'),
-              fetchPage: (page) =>
-                  viewModel.getCategoryProducts(category, page),
+    return DefaultTabController(
+      length: viewModel.categories.length,
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: HomeAppBar(
+              tabsLoading: viewModel.busy(busyFetchingCategories),
+              tabsLabels: viewModel.categories,
+              onSearchTextChanged: (searchText) {
+                viewModel.onSearchTextChanged(searchText);
+                DefaultTabController.of(context).animateTo(0);
+                _productsListKey.currentState?.refresh();
+              },
+              onCartButtonPressed: viewModel.onCartButtonPressed,
             ),
-          )
-          .toList(),
-      onTabChanged: viewModel.onTabChanged,
-      onSearchTextChanged: (searchText) {
-        viewModel.onSearchTextChanged(searchText);
-        _tabBarViewScreenKey.currentState!.goToView(0);
-        _productsListKey.currentState!.refresh();
-      },
-      onCartButtonPressed: () {},
+            body: TabBarView(
+              children: viewModel.categories
+                  .map(
+                    (category) => ProductsList(
+                      onProductShoppingCartTap:
+                          viewModel.onProductShoppingCartTap,
+                      onProductTap: viewModel.onProductTap,
+                      key: category == allCategories
+                          ? _productsListKey
+                          : ValueKey('ProductsList@$category'),
+                      fetchPage: (page) =>
+                          viewModel.getCategoryProducts(category, page),
+                    ),
+                  )
+                  .toList(),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -55,101 +66,15 @@ class HomeView extends StackedView<HomeViewModel> {
   }
 }
 
-class TabBarViewScreen extends StatefulWidget {
-  final List<String> tabsLabels;
-  final List<Widget> views;
-  final bool tabsLoading;
-  final void Function(int index) onTabChanged;
-  final void Function(String searchText)? onSearchTextChanged;
-  final GlobalKey<FormFieldState>? searchFieldKey;
-  final VoidCallback onCartButtonPressed;
-
-  const TabBarViewScreen({
-    super.key,
-    required this.tabsLabels,
-    required this.views,
-    required this.tabsLoading,
-    required this.onTabChanged,
-    required this.onCartButtonPressed,
-    this.onSearchTextChanged,
-    this.searchFieldKey,
-  });
-
-  @override
-  State<TabBarViewScreen> createState() => _TabBarViewScreenState();
-}
-
-class _TabBarViewScreenState extends State<TabBarViewScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-
-  void _initController() {
-    _tabController = TabController(
-      length: widget.tabsLabels.length,
-      vsync: this,
-    );
-
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        widget.onTabChanged(_tabController.index);
-      }
-    });
-  }
-
-  void goToView(int index) {
-    _tabController.animateTo(index);
-  }
-
-  void update() {
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _initController();
-  }
-
-  @override
-  void didUpdateWidget(covariant TabBarViewScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.tabsLabels.length != widget.tabsLabels.length) {
-      _tabController.dispose();
-      _initController();
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: HomeAppBar(
-        tabController: _tabController,
-        tabsLoading: widget.tabsLoading,
-        tabsLabels: widget.tabsLabels,
-        onSearchTextChanged: widget.onSearchTextChanged,
-        searchFieldKey: widget.searchFieldKey,
-        onCartButtonPressed: widget.onCartButtonPressed,
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: widget.views,
-      ),
-    );
-  }
-}
-
 class ProductsList extends StatefulWidget {
   final Future<ProductFetchingResult> Function(int page) fetchPage;
+  final void Function(int productId) onProductTap;
+  final void Function(int productId) onProductShoppingCartTap;
 
   const ProductsList({
     required this.fetchPage,
+    required this.onProductTap,
+    required this.onProductShoppingCartTap,
     super.key,
   });
 
@@ -217,7 +142,13 @@ class _ProductsListState extends State<ProductsList> {
       builderDelegate: PagedChildBuilderDelegate(
         animateTransitions: true,
         itemBuilder: (_, item, __) => ProductItem(
-          item,
+          onTap: () {
+            widget.onProductTap(item.id);
+          },
+          onShoppingCartPressed: () {
+            widget.onProductShoppingCartTap(item.id);
+          },
+          product: item,
           key: ValueKey('ProductItem#${item.id}'),
         ),
         noItemsFoundIndicatorBuilder: (_) => const Center(
@@ -244,95 +175,100 @@ class _ProductsListState extends State<ProductsList> {
 
 class ProductItem extends StatelessWidget {
   final Product product;
+  final VoidCallback onTap;
+  final VoidCallback onShoppingCartPressed;
 
-  const ProductItem(
-    this.product, {
+  const ProductItem({
+    required this.product,
+    required this.onShoppingCartPressed,
+    required this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: 30,
-        right: 25,
-      ),
-      child: SizedBox(
-        height: 120,
-        child: Row(
-          children: [
-            Material(
-              borderRadius: circularBorderRadius,
-              elevation: 4,
-              child: SizedBox.square(
-                dimension: 85,
-                child: ClipRRect(
-                  borderRadius: circularBorderRadius,
-                  child: Image.network(
-                    product.thumbnail,
-                    fit: BoxFit.cover,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: 30,
+          right: 25,
+        ),
+        child: SizedBox(
+          height: 120,
+          child: Row(
+            children: [
+              Material(
+                borderRadius: circularBorderRadius,
+                elevation: 4,
+                child: SizedBox.square(
+                  dimension: 85,
+                  child: ClipRRect(
+                    borderRadius: circularBorderRadius,
+                    child: Image.network(
+                      product.thumbnail,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 27),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: kcTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          product.price.asCurrency(),
-                          style: const TextStyle(
-                            color: kcTextColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 17,
-                          ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 27),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: kcTextColor,
                         ),
-                        if (product.discountPercentage > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 8.0,
-                              bottom: 1.0,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            product.price.asCurrency(),
+                            style: const TextStyle(
+                              color: kcTextColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 17,
                             ),
-                            child: Text(
-                              (product.price *
-                                      100 /
-                                      (100 - product.discountPercentage))
-                                  .asCurrency(),
-                              style: const TextStyle(
-                                color: Color(0xFFF76030),
-                                fontSize: 12,
-                                decoration: TextDecoration.lineThrough,
+                          ),
+                          if (product.discountPercentage > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 8.0,
+                                bottom: 1.0,
+                              ),
+                              child: Text(
+                                (product.price *
+                                        100 /
+                                        (100 - product.discountPercentage))
+                                    .asCurrency(),
+                                style: const TextStyle(
+                                  color: Color(0xFFF76030),
+                                  fontSize: 12,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 20),
-            ShoppingCartButton(
-              onPressed: () {},
-            )
-          ],
+              const SizedBox(width: 20),
+              ShoppingCartButton(onPressed: onShoppingCartPressed)
+            ],
+          ),
         ),
       ),
     );

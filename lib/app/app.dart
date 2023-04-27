@@ -6,13 +6,15 @@ import 'package:stacked/stacked_annotations.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
+import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart';
 // @stacked-import
 
 @StackedApp(
   routes: [
     MaterialRoute(page: HomeView),
     MaterialRoute(page: StartupView),
-    // @stacked-route
+    MaterialRoute(page: ProductView),
+// @stacked-route
   ],
   dependencies: [
     LazySingleton(classType: BottomSheetService),
