@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
-import 'custom_sheet_model.dart';
-
-class CustomSheet extends StackedView<CustomSheetModel> {
+class CustomSheet extends StatelessWidget {
   final Function(SheetResponse response)? completer;
   final SheetRequest request;
 
@@ -15,14 +12,7 @@ class CustomSheet extends StackedView<CustomSheetModel> {
   }) : super(key: key);
 
   @override
-  Widget builder(
-    BuildContext context,
-    CustomSheetModel viewModel,
-    Widget? child,
-  ) {
+  Widget build(BuildContext context) {
     return request.data;
   }
-
-  @override
-  CustomSheetModel viewModelBuilder(BuildContext context) => CustomSheetModel();
 }

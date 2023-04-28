@@ -19,29 +19,29 @@ class ProductViewModel extends BaseViewModel {
   Product? get product => _product;
 
   Future<void> init() async {
-    _fetchProduct();
+    await _fetchProduct();
     rebuildUi();
   }
 
-  Future<void> onRefresh() async {
-    _fetchProduct();
-    rebuildUi();
-  }
+  Future<void> onRefresh() => init();
 
   Future<void> _fetchProduct() async {
     final response = await runBusyFuture(
-      _productService.getProduct(productId, select: [
-        ProductField.id,
-        ProductField.title,
-        ProductField.description,
-        ProductField.price,
-        ProductField.discountPercentage,
-        ProductField.rating,
-        ProductField.stock,
-        ProductField.brand,
-        ProductField.category,
-        ProductField.images,
-      ]),
+      _productService.getProduct(
+        productId,
+        select: [
+          ProductField.id,
+          ProductField.title,
+          ProductField.description,
+          ProductField.price,
+          ProductField.discountPercentage,
+          ProductField.rating,
+          ProductField.stock,
+          ProductField.brand,
+          ProductField.category,
+          ProductField.images,
+        ],
+      ),
       busyObject: fetchingProduct,
     );
 
