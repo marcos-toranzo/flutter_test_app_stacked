@@ -1,4 +1,3 @@
-import 'package:flutter_app_test_stacked/ui/bottom_sheets/notice/notice_sheet.dart';
 import 'package:flutter_app_test_stacked/ui/dialogs/info_alert/info_alert_dialog.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_view.dart';
 import 'package:flutter_app_test_stacked/ui/views/startup/startup_view.dart';
@@ -32,7 +31,6 @@ import 'package:flutter_app_test_stacked/services/database_service.dart';
 // @stacked-service
   ],
   bottomsheets: [
-    StackedBottomsheet(classType: NoticeSheet),
     StackedBottomsheet(classType: CustomSheet),
 // @stacked-bottom-sheet
   ],

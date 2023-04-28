@@ -14,16 +14,16 @@ void main() async {
   setupBottomSheetUi();
   await locator<DatabaseService>().open();
 
-  runApp(const MyApp());
+  runApp(const FlutterTestStackedApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class FlutterTestStackedApp extends StatelessWidget {
+  const FlutterTestStackedApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Stacked',
       theme: Theme.of(context).copyWith(
         textTheme: Theme.of(context).textTheme.apply(
               fontFamily: 'Mulish',
