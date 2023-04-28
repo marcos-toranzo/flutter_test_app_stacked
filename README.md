@@ -1,17 +1,9 @@
-# stacked_app
+# Flutter Test App
 
-A new Flutter project.
+A Flutter test app using Clean Architecture, MVVM and [Stacked](https://stacked.filledstacks.com/), following [this](https://www.figma.com/file/HehRywstjGipJMcMZqwJqG/Carrito?node-id=0-1&t=o2241PkGk8jhRUqE-0) design and using [this](https://dummyjson.com/docs/products) API.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+Basic functionalities:
+- Show a paginated list with search.
+- Show details of a product.
+- Handle a cart locally. For this the app uses the [sqflite](https://pub.dev/packages/sqflite) package to store the data.
+  
