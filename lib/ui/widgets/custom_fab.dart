@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 
 class CustomFab extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const CustomFab({
     super.key,
     required this.text,
-    required this.onPressed,
+    this.onPressed,
   });
 
   @override
@@ -22,7 +23,7 @@ class CustomFab extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF47858A),
+            backgroundColor: kcTeal,
             shape: RoundedRectangleBorder(borderRadius: circularBorderRadius),
           ),
           onPressed: onPressed,

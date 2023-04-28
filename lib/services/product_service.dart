@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 
@@ -11,19 +12,16 @@ class ProductService {
     try {
       final response = await _networkService.get('products/categories');
 
-      if (response.statusCode == StatusCode.ok) {
-        final categories = (json.decode(response.body) as List).cast<String>();
-
-        return ApiResponse(success: true, data: categories);
+      if (response.statusCode != StatusCode.ok) {
+        return const ErrorApiResponse();
       }
-    } on Exception catch (e) {
-      return ApiResponse(
-        success: false,
-        errorMessage: e.toString(),
-      );
-    }
 
-    return const ApiResponse(success: false);
+      final categories = (json.decode(response.body) as List).cast<String>();
+
+      return SuccessApiResponse(data: categories);
+    } on Exception catch (e) {
+      return ErrorApiResponse(errorMessage: e.toString());
+    }
   }
 
   Future<ApiResponse<List<Product>>> getProducts({
@@ -41,29 +39,42 @@ class ProductService {
         },
       );
 
-      if (response.statusCode == StatusCode.ok) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        final productsData =
-            (data['products'] as List).cast<Map<String, dynamic>>();
-
-        final products = productsData.map(Product.fromMap).toList();
-
-        return ApiResponse(
-          success: true,
-          data: products,
-          limit: data['limit'],
-          skip: data['skip'],
-          total: data['total'],
-        );
+      if (response.statusCode != StatusCode.ok) {
+        return const ErrorApiResponse();
       }
-    } on Exception catch (e) {
-      return ApiResponse(
-        success: false,
-        errorMessage: e.toString(),
-      );
-    }
 
-    return const ApiResponse(success: false);
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final productsData =
+          (data['products'] as List).cast<Map<String, dynamic>>();
+
+      final products = productsData.mapList(Product.fromMap);
+
+      return SuccessApiResponse(
+        data: products,
+        limit: data['limit'],
+        skip: data['skip'],
+        total: data['total'],
+      );
+    } on Exception catch (e) {
+      return ErrorApiResponse(errorMessage: e.toString());
+    }
+  }
+
+  Future<ApiResponse<List<Product>>> getProductsWithIds(List<int> ids) async {
+    try {
+      final productsResult = await getProducts(limit: 100);
+
+      if (!productsResult.success) {
+        return productsResult;
+      }
+
+      return SuccessApiResponse(
+        data: productsResult.data!
+            .whereList((product) => ids.contains(product.id)),
+      );
+    } on Exception catch (e) {
+      return ErrorApiResponse(errorMessage: e.toString());
+    }
   }
 
   Future<ApiResponse<List<Product>>> getCategoryProducts(
@@ -80,48 +91,40 @@ class ProductService {
         },
       );
 
-      if (response.statusCode == StatusCode.ok) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        final productsData =
-            (data['products'] as List).cast<Map<String, dynamic>>();
-
-        final products = productsData.map(Product.fromMap).toList();
-
-        return ApiResponse(
-          success: true,
-          data: products,
-          limit: data['limit'],
-          skip: data['skip'],
-          total: data['total'],
-        );
+      if (response.statusCode != StatusCode.ok) {
+        return const ErrorApiResponse();
       }
-    } on Exception catch (e) {
-      return ApiResponse(
-        success: false,
-        errorMessage: e.toString(),
-      );
-    }
 
-    return const ApiResponse(success: false);
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final productsData =
+          (data['products'] as List).cast<Map<String, dynamic>>();
+
+      final products = productsData.mapList(Product.fromMap);
+
+      return SuccessApiResponse(
+        data: products,
+        limit: data['limit'],
+        skip: data['skip'],
+        total: data['total'],
+      );
+    } on Exception catch (e) {
+      return ErrorApiResponse(errorMessage: e.toString());
+    }
   }
 
   Future<ApiResponse<Product>> getProduct(int id) async {
     try {
       final response = await _networkService.get('products/$id');
 
-      if (response.statusCode == StatusCode.ok) {
-        return ApiResponse(
-          success: true,
-          data: Product.fromJson(response.body),
-        );
+      if (response.statusCode != StatusCode.ok) {
+        return const ErrorApiResponse();
       }
-    } on Exception catch (e) {
-      return ApiResponse(
-        success: false,
-        errorMessage: e.toString(),
-      );
-    }
 
-    return const ApiResponse(success: false);
+      return SuccessApiResponse(
+        data: Product.fromJson(response.body),
+      );
+    } on Exception catch (e) {
+      return ErrorApiResponse(errorMessage: e.toString());
+    }
   }
 }

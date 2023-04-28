@@ -10,6 +10,7 @@ import 'package:flutter_app_test_stacked/ui/views/product/product_view.dart';
 import 'package:flutter_app_test_stacked/ui/views/cart/cart_view.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/ui/bottom_sheets/custom/custom_sheet.dart';
+import 'package:flutter_app_test_stacked/services/database_service.dart';
 // @stacked-import
 
 @StackedApp(
@@ -27,6 +28,7 @@ import 'package:flutter_app_test_stacked/ui/bottom_sheets/custom/custom_sheet.da
     LazySingleton(classType: ProductService),
     LazySingleton(classType: NetworkService),
     LazySingleton(classType: CartService),
+    LazySingleton(classType: DatabaseService),
 // @stacked-service
   ],
   bottomsheets: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
@@ -13,6 +14,8 @@ class HomeAppBar extends AppBar {
     required bool tabsLoading,
     required List<String> tabsLabels,
     required VoidCallback onCartButtonPressed,
+    required VoidCallback onCategoriesRefresh,
+    required int cartCount,
   }) : super(
           backgroundColor: kcAppBarColor,
           shadowColor: kcAccentColor.withAlpha(120),
@@ -35,7 +38,7 @@ class HomeAppBar extends AppBar {
                 children: [
                   ShoppingCartAppBarButton(
                     onPressed: onCartButtonPressed,
-                    count: 4,
+                    count: cartCount,
                   ),
                 ],
               ),
@@ -45,6 +48,7 @@ class HomeAppBar extends AppBar {
             controller: tabController,
             loading: tabsLoading,
             tabsLabels: tabsLabels,
+            onCategoriesRefresh: onCategoriesRefresh,
           ),
         );
 }
@@ -53,11 +57,13 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
   final List<String> tabsLabels;
   final bool loading;
   final TabController? controller;
+  final VoidCallback onCategoriesRefresh;
 
   const AppTabBar({
     super.key,
     required this.tabsLabels,
     this.loading = false,
+    required this.onCategoriesRefresh,
     this.controller,
   });
 
@@ -82,10 +88,61 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
       isScrollable: true,
       physics: const BouncingScrollPhysics(),
       indicator: const DotIndicator(),
-      tabs: tabsLabels.map((e) => Text(e)).toList(),
+      tabs: tabsLabels.mapList((e) => Text(e)),
     );
 
+    late final List<Widget> toShow;
+
+    if (loading) {
+      toShow = [
+        tabBar,
+        const Expanded(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: LinearProgressIndicator(),
+            ),
+          ),
+        ),
+      ];
+    } else {
+      if (tabsLabels.length == 1) {
+        toShow = [
+          tabBar,
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: InkWell(
+                    onTap: onCategoriesRefresh,
+                    borderRadius: circularBorderRadius,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: const [
+                          Text('Refresh'),
+                          Icon(
+                            Icons.refresh,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ];
+      } else {
+        toShow = [Expanded(child: tabBar)];
+      }
+    }
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Padding(
           padding: const EdgeInsets.only(
@@ -94,19 +151,7 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
           ),
           child: CustomIcon.categoriesMenu(),
         ),
-        ...(loading
-            ? [
-                tabBar,
-                const Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
-                      child: LinearProgressIndicator(),
-                    ),
-                  ),
-                ),
-              ]
-            : [Expanded(child: tabBar)]),
+        ...toShow,
       ],
     );
   }

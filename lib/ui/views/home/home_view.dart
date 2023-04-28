@@ -1,17 +1,22 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
+import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/products_list.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
 import 'package:stacked/stacked.dart';
 
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
+import 'package:stacked_services/stacked_services.dart';
 
 import 'home_viewmodel.dart';
 
 class HomeView extends StackedView<HomeViewModel> {
   final _productsListKey = GlobalKey<ProductsListState>();
+  final _dialogService = locator<DialogService>();
 
   HomeView({super.key});
 
@@ -31,9 +36,25 @@ class HomeView extends StackedView<HomeViewModel> {
                 _productsListKey.currentState?.refresh();
               },
               onCartButtonPressed: viewModel.onCartButtonPressed,
+              cartCount: viewModel.cartCount,
+              onCategoriesRefresh: () {
+                viewModel.refreshCategories().then(
+                  (success) {
+                    if (!success) {
+                      _dialogService.showCustomDialog(
+                        variant: DialogType.infoAlert,
+                        data: false,
+                        title: 'Oops!',
+                        description:
+                            'Something went wrong trying to fetch the categories.',
+                      );
+                    }
+                  },
+                );
+              },
             ),
             body: TabBarView(
-              children: viewModel.categories.map((category) {
+              children: viewModel.categories.mapList((category) {
                 return ProductsList(
                   onProductTap: viewModel.onProductTap,
                   key: category == allCategories ? _productsListKey : null,
@@ -42,12 +63,33 @@ class HomeView extends StackedView<HomeViewModel> {
                   trailingBuilder: (productId) => CustomButton(
                     icon: CustomIcon.shoppingCart(),
                     circular: false,
-                    onPressed: () {
-                      viewModel.onProductShoppingCartTap(productId);
-                    },
+                    onPressed: viewModel.busy(productId)
+                        ? null
+                        : () {
+                            viewModel.onProductShoppingCartTap(productId).then(
+                              (success) {
+                                if (!success) {
+                                  _dialogService.showCustomDialog(
+                                    variant: DialogType.infoAlert,
+                                    data: false,
+                                    title: 'Oops!',
+                                    description:
+                                        'Something went wrong trying to add product to cart.',
+                                  );
+                                } else {
+                                  _dialogService.showCustomDialog(
+                                    variant: DialogType.infoAlert,
+                                    data: true,
+                                    title: 'Hooray!',
+                                    description: 'Product added to cart.',
+                                  );
+                                }
+                              },
+                            );
+                          },
                   ),
                 );
-              }).toList(),
+              }),
             ),
           );
         },
@@ -60,6 +102,20 @@ class HomeView extends StackedView<HomeViewModel> {
 
   @override
   void onViewModelReady(HomeViewModel viewModel) {
-    SchedulerBinding.instance.addPostFrameCallback((_) => viewModel.init());
+    SchedulerBinding.instance.addPostFrameCallback(
+      (_) => viewModel.init().then(
+        (success) {
+          if (!success) {
+            _dialogService.showCustomDialog(
+              variant: DialogType.infoAlert,
+              data: false,
+              title: 'Oops!',
+              description:
+                  'Something went wrong trying to fetch the categories.',
+            );
+          }
+        },
+      ),
+    );
   }
 }

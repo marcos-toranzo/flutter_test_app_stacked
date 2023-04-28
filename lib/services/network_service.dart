@@ -100,6 +100,21 @@ class ApiResponse<T> {
   });
 }
 
+class SuccessApiResponse<T> extends ApiResponse<T> {
+  const SuccessApiResponse({
+    super.data,
+    super.total,
+    super.skip,
+    super.limit,
+  }) : super(success: true);
+}
+
+class ErrorApiResponse<T> extends ApiResponse<T> {
+  const ErrorApiResponse({
+    super.errorMessage,
+  }) : super(success: false);
+}
+
 class NetworkResponse {
   final StatusCode statusCode;
   final String body;

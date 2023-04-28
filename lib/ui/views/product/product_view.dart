@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
+import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_header.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_price_and_discount.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_app_bar.dart';
@@ -7,13 +9,16 @@ import 'package:flutter_app_test_stacked/ui/views/product/product_images_carouse
 import 'package:flutter_app_test_stacked/ui/views/product/product_stock_status.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_fab.dart';
 import 'package:stacked/stacked.dart';
+import 'package:stacked_services/stacked_services.dart';
 
 import 'product_viewmodel.dart';
 
 class ProductView extends StackedView<ProductViewModel> {
+  final _dialogService = locator<DialogService>();
+
   final int productId;
 
-  const ProductView({
+  ProductView({
     Key? key,
     required this.productId,
   }) : super(key: key);
@@ -40,7 +45,30 @@ class ProductView extends StackedView<ProductViewModel> {
           ? null
           : CustomFab(
               text: 'Add to Cart',
-              onPressed: () {},
+              onPressed: viewModel.busy(addingToCart)
+                  ? null
+                  : () {
+                      viewModel.onAddToCartPressed().then(
+                        (success) {
+                          if (!success) {
+                            _dialogService.showCustomDialog(
+                              variant: DialogType.infoAlert,
+                              data: false,
+                              title: 'Oops!',
+                              description:
+                                  'Something went wrong trying to add product to cart.',
+                            );
+                          } else {
+                            _dialogService.showCustomDialog(
+                              variant: DialogType.infoAlert,
+                              data: true,
+                              title: 'Hooray!',
+                              description: 'Product added to cart.',
+                            );
+                          }
+                        },
+                      );
+                    },
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: viewModel.busy(fetchingProduct)

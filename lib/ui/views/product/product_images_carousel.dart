@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 
@@ -25,17 +26,22 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CarouselSlider(
-          items: widget.images
-              .map(
-                (image) => ClipRRect(
+          items: widget.images.mapList(
+            (image) => Padding(
+              padding: const EdgeInsets.only(bottom: 2.0),
+              child: Material(
+                elevation: 2,
+                borderRadius: circularBorderRadius,
+                child: ClipRRect(
                   borderRadius: circularBorderRadius,
                   child: Image.network(
                     image,
                     fit: BoxFit.cover,
                   ),
                 ),
-              )
-              .toList(),
+              ),
+            ),
+          ),
           carouselController: _controller,
           options: CarouselOptions(
             autoPlay: true,
@@ -52,7 +58,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: widget.images.asMap().entries.map((entry) {
+          children: widget.images.asMap().entries.mapList((entry) {
             final selected = _current == entry.key;
 
             return GestureDetector(
@@ -66,11 +72,13 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
                 ),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: kcTextColor.withOpacity(selected ? 0.9 : 0.4),
+                  color: selected
+                      ? kcTeal.withOpacity(0.9)
+                      : kcTextColor.withOpacity(0.3),
                 ),
               ),
             );
-          }).toList(),
+          }),
         ),
       ],
     );

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_app_test_stacked/app/app.bottomsheets.dart';
+import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:flutter_app_test_stacked/ui/views/cart/add_remove_cart_product.dart';
 import 'package:flutter_app_test_stacked/ui/views/cart/cart_checkout_modal.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_app_bar.dart';
-import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_fab.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
@@ -15,6 +16,7 @@ import 'cart_viewmodel.dart';
 
 class CartView extends StackedView<CartViewModel> {
   final _bottomSheetService = locator<BottomSheetService>();
+  final _dialogService = locator<DialogService>();
 
   CartView({Key? key}) : super(key: key);
 
@@ -26,22 +28,33 @@ class CartView extends StackedView<CartViewModel> {
   ) {
     final products = viewModel.products;
 
-    final countText = products == null
-        ? null
-        : '${products.length} product${products.length > 1 ? 's' : ''}';
-
     return Scaffold(
       appBar: CustomAppBar(
         titleText: 'Cart',
-        subtitleText: countText,
+        subtitleText: viewModel.count == 0
+            ? 'No products'
+            : '${viewModel.count} product${viewModel.count != 1 ? 's' : ''}',
         buttons: [
           CustomAppBarButton(
             icon: CustomIcon.trash(),
-            onPressed: viewModel.onDeleteCart,
+            onPressed: () {
+              viewModel.onEmptyCart().then(
+                (success) {
+                  if (!success) {
+                    _dialogService.showCustomDialog(
+                      variant: DialogType.infoAlert,
+                      data: false,
+                      title: 'Oops!',
+                      description: 'Something went wrong trying to clear cart.',
+                    );
+                  }
+                },
+              );
+            },
           ),
         ],
       ),
-      floatingActionButton: products == null
+      floatingActionButton: products?.isEmpty != false
           ? null
           : CustomFab(
               text: 'Checkout',
@@ -51,7 +64,7 @@ class CartView extends StackedView<CartViewModel> {
                   data: CartCheckoutModal(
                     onConfirmPressed: () {},
                     onDiscountCouponPressed: () {},
-                    total: 337.15,
+                    total: viewModel.total,
                   ),
                 );
               },
@@ -59,40 +72,67 @@ class CartView extends StackedView<CartViewModel> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: viewModel.busy(fetchingProducts)
           ? const Center(child: CircularProgressIndicator())
-          : viewModel.products == null
+          : products == null
               ? const Center(child: Text('Error fetching cart products'))
-              : ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 100),
-                  separatorBuilder: (_, __) => const Divider(
-                    endIndent: 10,
-                    indent: 10,
-                    thickness: 0.8,
-                    height: 0,
-                  ),
-                  itemCount: viewModel.products!.length,
-                  itemBuilder: (_, index) {
-                    final product = viewModel.products![index];
-
-                    return ProductItem(
-                      horizontalPadding: 18,
-                      product: product,
-                      showDiscount: false,
-                      onTap: () {
-                        viewModel.onProductTap(product.id);
-                      },
-                      trailing: AddRemoveCartProduct(
-                        count: 1,
-                        onAdd: () {
-                          viewModel.onAddProduct(product.id);
-                        },
-                        onRemove: () {
-                          viewModel.onRemoveProduct(product.id);
-                        },
+              : products.isEmpty
+                  ? const Center(child: Text('Empty'))
+                  : ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 100),
+                      separatorBuilder: (_, __) => const Divider(
+                        endIndent: 10,
+                        indent: 10,
+                        thickness: 0.8,
+                        height: 0,
                       ),
-                    );
-                  },
-                ),
+                      itemCount: products.length,
+                      itemBuilder: (_, index) {
+                        final product = products[index];
+
+                        return ProductItem(
+                          horizontalPadding: 18,
+                          product: product,
+                          showDiscount: false,
+                          onTap: () {
+                            viewModel.onProductTap(product.id);
+                          },
+                          trailing: AddRemoveCartProduct(
+                            busy: viewModel.busy(product.id),
+                            count: viewModel.getProductCount(product.id),
+                            onAdd: () {
+                              viewModel.onAddProduct(product.id).then(
+                                (success) {
+                                  if (!success) {
+                                    _dialogService.showCustomDialog(
+                                      variant: DialogType.infoAlert,
+                                      data: false,
+                                      title: 'Oops!',
+                                      description:
+                                          'Something went wrong trying to add product.',
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                            onRemove: () {
+                              viewModel.onRemoveProduct(product.id).then(
+                                (success) {
+                                  if (!success) {
+                                    _dialogService.showCustomDialog(
+                                      variant: DialogType.infoAlert,
+                                      data: false,
+                                      title: 'Oops!',
+                                      description:
+                                          'Something went wrong trying to remove product',
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 
@@ -102,53 +142,5 @@ class CartView extends StackedView<CartViewModel> {
   @override
   void onViewModelReady(CartViewModel viewModel) {
     SchedulerBinding.instance.addPostFrameCallback((_) => viewModel.init());
-  }
-}
-
-class AddRemoveCartProduct extends StatelessWidget {
-  final int count;
-  final VoidCallback? onAdd;
-  final VoidCallback? onRemove;
-
-  const AddRemoveCartProduct({
-    super.key,
-    required this.count,
-    this.onAdd,
-    this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CustomButton(
-          icon: const Icon(
-            Icons.horizontal_rule,
-            size: 15,
-          ),
-          onPressed: onAdd,
-          size: 28,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 9.0),
-          child: Text(
-            count.toString(),
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        CustomButton(
-          icon: const Icon(
-            Icons.add,
-            size: 15,
-          ),
-          onPressed: onRemove,
-          size: 28,
-        ),
-      ],
-    );
   }
 }

@@ -26,6 +26,7 @@ class ProductHeader extends StatelessWidget {
           style: const TextStyle(
             color: kcTextColor,
             fontSize: 26,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 10),

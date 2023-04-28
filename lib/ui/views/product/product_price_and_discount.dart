@@ -47,7 +47,7 @@ class ProductPriceAndDiscount extends StatelessWidget {
         if (discount > 0)
           Row(
             children: [
-              const SizedBox(width: 20),
+              const SizedBox(width: 30),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

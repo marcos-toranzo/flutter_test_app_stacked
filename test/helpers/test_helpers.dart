@@ -5,6 +5,7 @@ import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
+import 'package:flutter_app_test_stacked/services/database_service.dart';
 // @stacked-import
 
 import 'test_helpers.mocks.dart';
@@ -16,6 +17,7 @@ import 'test_helpers.mocks.dart';
   MockSpec<ProductService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<NetworkService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<CartService>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<DatabaseService>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
 void registerServices() {
@@ -25,6 +27,7 @@ void registerServices() {
   getAndRegisterProductService();
   getAndRegisterNetworkService();
   getAndRegisterCartService();
+  getAndRegisterDatabaseService();
 // @stacked-mock-register
 }
 
@@ -96,6 +99,13 @@ MockCartService getAndRegisterCartService() {
   _removeRegistrationIfExists<CartService>();
   final service = MockCartService();
   locator.registerSingleton<CartService>(service);
+  return service;
+}
+
+MockDatabaseService getAndRegisterDatabaseService() {
+  _removeRegistrationIfExists<DatabaseService>();
+  final service = MockDatabaseService();
+  locator.registerSingleton<DatabaseService>(service);
   return service;
 }
 // @stacked-mock-create

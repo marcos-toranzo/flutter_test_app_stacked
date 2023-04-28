@@ -24,6 +24,8 @@ class InfoAlertDialog extends StackedView<InfoAlertDialogModel> {
     InfoAlertDialogModel viewModel,
     Widget? child,
   ) {
+    final bool? success = request.data;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       backgroundColor: Colors.white,
@@ -56,21 +58,22 @@ class InfoAlertDialog extends StackedView<InfoAlertDialogModel> {
                     ],
                   ),
                 ),
-                Container(
-                  width: _graphicSize,
-                  height: _graphicSize,
-                  decoration: const BoxDecoration(
-                    color: Color(0xffF6E7B0),
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(_graphicSize / 2),
+                if (success != null)
+                  Container(
+                    width: _graphicSize,
+                    height: _graphicSize,
+                    decoration: const BoxDecoration(
+                      color: Color(0xffF6E7B0),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(_graphicSize / 2),
+                      ),
                     ),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    '⭐️',
-                    style: TextStyle(fontSize: 30),
-                  ),
-                )
+                    alignment: Alignment.center,
+                    child: Text(
+                      success ? '🎉' : '💥',
+                      style: const TextStyle(fontSize: 30),
+                    ),
+                  )
               ],
             ),
             verticalSpaceMedium,
@@ -82,9 +85,9 @@ class InfoAlertDialog extends StackedView<InfoAlertDialogModel> {
                 height: 50,
                 width: double.infinity,
                 alignment: Alignment.center,
-                child: const Text(
-                  'Got it',
-                  style: TextStyle(
+                child: Text(
+                  request.mainButtonTitle ?? 'Got it',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

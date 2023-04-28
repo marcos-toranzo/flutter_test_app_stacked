@@ -7,8 +7,12 @@ import 'dart:async' as _i5;
 import 'dart:ui' as _i6;
 
 import 'package:flutter/material.dart' as _i4;
+import 'package:flutter_app_test_stacked/models/cart_entry.dart' as _i10;
+import 'package:flutter_app_test_stacked/models/model.dart' as _i12;
 import 'package:flutter_app_test_stacked/models/product.dart' as _i8;
 import 'package:flutter_app_test_stacked/services/cart_service.dart' as _i9;
+import 'package:flutter_app_test_stacked/services/database_service.dart'
+    as _i11;
 import 'package:flutter_app_test_stacked/services/network_service.dart' as _i2;
 import 'package:flutter_app_test_stacked/services/product_service.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
@@ -726,6 +730,32 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
         )),
       ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
   @override
+  _i5.Future<_i2.ApiResponse<List<_i8.Product>>> getProductsWithIds(
+          List<int>? ids) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getProductsWithIds,
+          [ids],
+        ),
+        returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
+            _FakeApiResponse_0<List<_i8.Product>>(
+          this,
+          Invocation.method(
+            #getProductsWithIds,
+            [ids],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
+                _FakeApiResponse_0<List<_i8.Product>>(
+          this,
+          Invocation.method(
+            #getProductsWithIds,
+            [ids],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
+  @override
   _i5.Future<_i2.ApiResponse<List<_i8.Product>>> getCategoryProducts(
     String? category, {
     int? limit = 0,
@@ -948,28 +978,235 @@ class MockNetworkService extends _i1.Mock implements _i2.NetworkService {
 /// See the documentation for Mockito's code generation for more information.
 class MockCartService extends _i1.Mock implements _i9.CartService {
   @override
-  _i5.Future<_i2.ApiResponse<List<_i8.Product>>> getProducts() =>
+  int get count => (super.noSuchMethod(
+        Invocation.getter(#count),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+  @override
+  int get listenersCount => (super.noSuchMethod(
+        Invocation.getter(#listenersCount),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+  @override
+  _i5.Future<_i2.ApiResponse<List<_i10.CartEntry>>> getEntries() =>
       (super.noSuchMethod(
         Invocation.method(
-          #getProducts,
+          #getEntries,
           [],
         ),
-        returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
-            _FakeApiResponse_0<List<_i8.Product>>(
+        returnValue: _i5.Future<_i2.ApiResponse<List<_i10.CartEntry>>>.value(
+            _FakeApiResponse_0<List<_i10.CartEntry>>(
           this,
           Invocation.method(
-            #getProducts,
+            #getEntries,
             [],
           ),
         )),
         returnValueForMissingStub:
-            _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
-                _FakeApiResponse_0<List<_i8.Product>>(
+            _i5.Future<_i2.ApiResponse<List<_i10.CartEntry>>>.value(
+                _FakeApiResponse_0<List<_i10.CartEntry>>(
           this,
           Invocation.method(
-            #getProducts,
+            #getEntries,
             [],
           ),
         )),
-      ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
+      ) as _i5.Future<_i2.ApiResponse<List<_i10.CartEntry>>>);
+  @override
+  _i5.Future<_i2.ApiResponse<_i10.CartEntry>> addProduct(int? productId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addProduct,
+          [productId],
+        ),
+        returnValue: _i5.Future<_i2.ApiResponse<_i10.CartEntry>>.value(
+            _FakeApiResponse_0<_i10.CartEntry>(
+          this,
+          Invocation.method(
+            #addProduct,
+            [productId],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<_i10.CartEntry>>.value(
+                _FakeApiResponse_0<_i10.CartEntry>(
+          this,
+          Invocation.method(
+            #addProduct,
+            [productId],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<_i10.CartEntry>>);
+  @override
+  _i5.Future<_i2.ApiResponse<_i10.CartEntry>> removeProduct(int? productId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removeProduct,
+          [productId],
+        ),
+        returnValue: _i5.Future<_i2.ApiResponse<_i10.CartEntry>>.value(
+            _FakeApiResponse_0<_i10.CartEntry>(
+          this,
+          Invocation.method(
+            #removeProduct,
+            [productId],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<_i10.CartEntry>>.value(
+                _FakeApiResponse_0<_i10.CartEntry>(
+          this,
+          Invocation.method(
+            #removeProduct,
+            [productId],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<_i10.CartEntry>>);
+  @override
+  _i5.Future<_i2.ApiResponse<Never>> empty() => (super.noSuchMethod(
+        Invocation.method(
+          #empty,
+          [],
+        ),
+        returnValue:
+            _i5.Future<_i2.ApiResponse<Never>>.value(_FakeApiResponse_0<Never>(
+          this,
+          Invocation.method(
+            #empty,
+            [],
+          ),
+        )),
+        returnValueForMissingStub:
+            _i5.Future<_i2.ApiResponse<Never>>.value(_FakeApiResponse_0<Never>(
+          this,
+          Invocation.method(
+            #empty,
+            [],
+          ),
+        )),
+      ) as _i5.Future<_i2.ApiResponse<Never>>);
+  @override
+  void listenToReactiveValues(List<dynamic>? reactiveValues) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #listenToReactiveValues,
+          [reactiveValues],
+        ),
+        returnValueForMissingStub: null,
+      );
+  @override
+  void addListener(void Function()? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+  @override
+  void removeListener(void Function()? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
+/// A class which mocks [DatabaseService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockDatabaseService extends _i1.Mock implements _i11.DatabaseService {
+  @override
+  _i5.Future<int> insert({
+    required String? tableName,
+    required _i12.DatabaseModel? model,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #insert,
+          [],
+          {
+            #tableName: tableName,
+            #model: model,
+          },
+        ),
+        returnValue: _i5.Future<int>.value(0),
+        returnValueForMissingStub: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
+  @override
+  _i5.Future<int> update({
+    required String? tableName,
+    required _i12.DatabaseModel? model,
+    List<_i11.WhereClause<dynamic>>? whereClauses,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #update,
+          [],
+          {
+            #tableName: tableName,
+            #model: model,
+            #whereClauses: whereClauses,
+          },
+        ),
+        returnValue: _i5.Future<int>.value(0),
+        returnValueForMissingStub: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
+  @override
+  _i5.Future<int> delete({
+    required String? tableName,
+    List<_i11.WhereClause<dynamic>>? whereClauses,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [],
+          {
+            #tableName: tableName,
+            #whereClauses: whereClauses,
+          },
+        ),
+        returnValue: _i5.Future<int>.value(0),
+        returnValueForMissingStub: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
+  @override
+  _i5.Future<List<Map<String, dynamic>>> get({
+    required String? tableName,
+    List<String>? columns,
+    List<_i11.WhereClause<dynamic>>? whereClauses,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [],
+          {
+            #tableName: tableName,
+            #columns: columns,
+            #whereClauses: whereClauses,
+          },
+        ),
+        returnValue: _i5.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+        returnValueForMissingStub: _i5.Future<List<Map<String, dynamic>>>.value(
+            <Map<String, dynamic>>[]),
+      ) as _i5.Future<List<Map<String, dynamic>>>);
+  @override
+  _i5.Future<void> open() => (super.noSuchMethod(
+        Invocation.method(
+          #open,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

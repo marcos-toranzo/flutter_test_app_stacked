@@ -3,12 +3,16 @@ import 'package:flutter_app_test_stacked/app/app.bottomsheets.dart';
 import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/app/app.router.dart';
+import 'package:flutter_app_test_stacked/services/database_service.dart';
 import 'package:stacked_services/stacked_services.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   setupLocator();
   setupDialogUi();
   setupBottomSheetUi();
+  await locator<DatabaseService>().open();
 
   runApp(const MyApp());
 }
