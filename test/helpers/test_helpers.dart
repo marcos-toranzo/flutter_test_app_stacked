@@ -10,6 +10,8 @@ import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/database_service.dart';
+import 'package:http/http.dart' as http;
+
 // @stacked-import
 
 import 'test_helpers.mocks.dart';
@@ -22,6 +24,7 @@ import 'test_helpers.mocks.dart';
   MockSpec<NetworkService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<CartService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<DatabaseService>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<http.Client>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
 void registerServices() {

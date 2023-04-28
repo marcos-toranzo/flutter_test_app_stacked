@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:http/http.dart';
 
+Client httpClient = Client();
+
 typedef HttpMethod = Future<Response> Function(
   Uri url, {
   Map<String, String>? headers,
@@ -12,16 +14,14 @@ typedef HttpMethod = Future<Response> Function(
 });
 
 class NetworkService {
-  final _httpClient = Client();
+  static const baseUrl = 'https://dummyjson.com';
 
-  Future<Map<String, String>> _getHeaders() async {
-    final headers = {
-      HttpHeaders.acceptHeader: 'application/json',
-      HttpHeaders.contentTypeHeader: 'application/json',
-    };
+  static final encoding = Encoding.getByName('utf-8');
 
-    return headers;
-  }
+  static const headers = {
+    HttpHeaders.acceptHeader: 'application/json',
+    HttpHeaders.contentTypeHeader: 'application/json',
+  };
 
   Future<NetworkResponse> _request(
     HttpMethod method,
@@ -29,15 +29,15 @@ class NetworkService {
     Map<String, dynamic> params = const {},
     Map<String, dynamic>? body,
   }) async {
-    final url = 'https://dummyjson.com/$endpoint';
+    final url = '$baseUrl/$endpoint';
 
     var urlWithParams = '$url?${Uri(queryParameters: params).query}';
 
     final response = await method(
       Uri.parse(urlWithParams),
-      headers: await _getHeaders(),
+      headers: headers,
       body: body != null ? json.encode(body) : null,
-      encoding: Encoding.getByName('utf-8'),
+      encoding: encoding,
     ).timeout(
       const Duration(seconds: 5),
       onTimeout: () => Response('timeout', StatusCode.timeout.code),
@@ -55,7 +55,7 @@ class NetworkService {
   }) =>
       _request(
         (endpoint, {body, encoding, headers}) =>
-            _httpClient.get(endpoint, headers: headers),
+            httpClient.get(endpoint, headers: headers),
         endpoint,
         params: params,
       );
@@ -64,22 +64,22 @@ class NetworkService {
     String endpoint, {
     Map<String, dynamic> body = const <String, dynamic>{},
   }) =>
-      _request(_httpClient.post, endpoint, body: body);
+      _request(httpClient.post, endpoint, body: body);
 
   Future<NetworkResponse> put(
     String endpoint, {
     Map<String, dynamic> body = const <String, dynamic>{},
   }) =>
-      _request(_httpClient.put, endpoint, body: body);
+      _request(httpClient.put, endpoint, body: body);
 
   Future<NetworkResponse> patch(
     String endpoint, {
     Map<String, dynamic> body = const <String, dynamic>{},
   }) =>
-      _request(_httpClient.patch, endpoint, body: body);
+      _request(httpClient.patch, endpoint, body: body);
 
   Future<NetworkResponse> delete(String endpoint) =>
-      _request(_httpClient.delete, endpoint);
+      _request(httpClient.delete, endpoint);
 }
 
 class ApiResponse<T> {
