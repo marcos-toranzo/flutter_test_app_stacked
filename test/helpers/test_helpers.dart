@@ -197,48 +197,49 @@ class TestHelper {
   }
 
   static Future<void> initApp<T extends Object>({
+    bool mockNetworkService = false,
+    bool mockDatabaseService = false,
     bool mockNavigationService = false,
     bool mockBottomSheetService = false,
     bool mockDialogService = false,
     bool mockProductService = false,
-    bool mockNetworkService = false,
     bool mockCartService = false,
-    bool mockDatabaseService = false,
-    VoidCallback? onNavigationServiceRegistered,
-    VoidCallback? onBottomSheetServiceRegistered,
-    VoidCallback? onDialogServiceRegistered,
-    VoidCallback? onProductServiceRegistered,
-    VoidCallback? onNetworkServiceRegistered,
-    VoidCallback? onCartServiceRegistered,
-    VoidCallback? onDatabaseServiceRegistered,
+    void Function(NetworkService networkService)? onNetworkServiceRegistered,
+    void Function(DatabaseService databaseService)? onDatabaseServiceRegistered,
+    void Function(NavigationService navigationService)?
+        onNavigationServiceRegistered,
+    void Function(BottomSheetService bottomSheetService)?
+        onBottomSheetServiceRegistered,
+    void Function(DialogService dialogService)? onDialogServiceRegistered,
+    void Function(ProductService productService)? onProductServiceRegistered,
+    void Function(CartService cartService)? onCartServiceRegistered,
     SheetResponse<T>? showCustomSheetResponse,
   }) async {
     _removeRegistrationIfExists<NetworkService>();
-    locator.registerSingleton<NetworkService>(
-      mockNetworkService ? MockNetworkService() : NetworkService(),
-    );
-
-    onNavigationServiceRegistered?.call();
+    final networkService =
+        mockNetworkService ? MockNetworkService() : NetworkService();
+    locator.registerSingleton<NetworkService>(networkService);
+    onNetworkServiceRegistered?.call(networkService);
 
     _removeRegistrationIfExists<DatabaseService>();
-    locator.registerSingleton<DatabaseService>(
-      mockDatabaseService ? MockDatabaseService() : DatabaseService(),
-    );
-
-    onDatabaseServiceRegistered?.call();
+    final databaseService =
+        mockDatabaseService ? MockDatabaseService() : DatabaseService();
+    locator.registerSingleton<DatabaseService>(databaseService);
+    onDatabaseServiceRegistered?.call(databaseService);
 
     _removeRegistrationIfExists<NavigationService>();
-    locator.registerSingleton<NavigationService>(
-      mockNavigationService ? MockNavigationService() : NavigationService(),
-    );
-
-    onNavigationServiceRegistered?.call();
+    final navigationService =
+        mockNavigationService ? MockNavigationService() : NavigationService();
+    locator.registerSingleton<NavigationService>(navigationService);
+    onNavigationServiceRegistered?.call(navigationService);
 
     _removeRegistrationIfExists<BottomSheetService>();
-    if (mockBottomSheetService) {
-      final service = MockBottomSheetService();
+    late final BottomSheetService bottomSheetService;
 
-      when(service.showCustomSheet<T, T>(
+    if (mockBottomSheetService) {
+      bottomSheetService = MockBottomSheetService();
+
+      when((bottomSheetService as MockBottomSheetService).showCustomSheet<T, T>(
         enableDrag: anyNamed('enableDrag'),
         enterBottomSheetDuration: anyNamed('enterBottomSheetDuration'),
         exitBottomSheetDuration: anyNamed('exitBottomSheetDuration'),
@@ -263,34 +264,28 @@ class TestHelper {
         description: anyNamed('description'),
       )).thenAnswer((realInvocation) =>
           Future.value(showCustomSheetResponse ?? SheetResponse<T>()));
-
-      locator.registerSingleton<BottomSheetService>(service);
     } else {
-      locator.registerSingleton<BottomSheetService>(BottomSheetService());
+      bottomSheetService = BottomSheetService();
     }
-
-    onBottomSheetServiceRegistered?.call();
+    locator.registerSingleton<BottomSheetService>(bottomSheetService);
+    onBottomSheetServiceRegistered?.call(bottomSheetService);
 
     _removeRegistrationIfExists<DialogService>();
-    locator.registerSingleton<DialogService>(
-      mockDialogService ? MockDialogService() : DialogService(),
-    );
-
-    onDialogServiceRegistered?.call();
+    final dialogService =
+        mockDialogService ? MockDialogService() : DialogService();
+    locator.registerSingleton<DialogService>(dialogService);
+    onDialogServiceRegistered?.call(dialogService);
 
     _removeRegistrationIfExists<ProductService>();
-    locator.registerSingleton<ProductService>(
-      mockProductService ? MockProductService() : ProductService(),
-    );
-
-    onProductServiceRegistered?.call();
+    final productService =
+        mockProductService ? MockProductService() : ProductService();
+    locator.registerSingleton<ProductService>(productService);
+    onProductServiceRegistered?.call(productService);
 
     _removeRegistrationIfExists<CartService>();
-    locator.registerSingleton<CartService>(
-      mockCartService ? MockCartService() : CartService(),
-    );
-
-    onCartServiceRegistered?.call();
+    final cartService = mockCartService ? MockCartService() : CartService();
+    locator.registerSingleton<CartService>(cartService);
+    onCartServiceRegistered?.call(cartService);
   }
 
   T widgetByType<T extends Widget>({

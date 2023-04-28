@@ -15,10 +15,8 @@ void main() {
     setUp(() {
       TestHelper.initApp(
         mockDatabaseService: true,
-        onDatabaseServiceRegistered: () {
-          final _databaseService = locator<DatabaseService>();
-
-          when(_databaseService.get(tableName: CartEntry.tableName)).thenAnswer(
+        onDatabaseServiceRegistered: (databaseService) {
+          when(databaseService.get(tableName: CartEntry.tableName)).thenAnswer(
             (_) async {
               return MockData.cartEntries.mapList((p0) => p0.toMap());
             },
@@ -31,34 +29,34 @@ void main() {
 
     group('Get entries -', () {
       test('should get entries', () async {
-        final _cartService = locator<CartService>();
+        final cartService = locator<CartService>();
 
-        final result = await _cartService.getEntries();
+        final result = await cartService.getEntries();
 
         expect(result.success, true);
         expect(result.data, isNotNull);
         expect(result.data!, MockData.cartEntries);
-        expect(_cartService.count, MockData.cartCount);
-        expect(_cartService.entries, MockData.cartEntries);
+        expect(cartService.count, MockData.cartCount);
+        expect(cartService.entries, MockData.cartEntries);
       });
     });
 
     group('Add product -', () {
       test('should add new entry', () async {
-        final _databaseService = locator<DatabaseService>();
-        final _cartService = locator<CartService>();
+        final databaseService = locator<DatabaseService>();
+        final cartService = locator<CartService>();
 
         final productId = MockData.product4.id;
         const cartId = 4;
 
-        when(_databaseService.insert(
+        when(databaseService.insert(
           tableName: CartEntry.tableName,
           model: CartEntry(productId: productId),
         )).thenAnswer((_) async {
           return cartId;
         });
 
-        final result = await _cartService.addProduct(productId);
+        final result = await cartService.addProduct(productId);
 
         final newCartEntry = CartEntry(
           productId: productId,
@@ -70,17 +68,17 @@ void main() {
         expect(result.data, isNotNull);
         expect(result.data!, newCartEntry);
 
-        expect(_cartService.count, MockData.cartCount + 1);
-        expect(_cartService.entries, [...MockData.cartEntries, newCartEntry]);
+        expect(cartService.count, MockData.cartCount + 1);
+        expect(cartService.entries, [...MockData.cartEntries, newCartEntry]);
       });
 
       test('should increase entry count', () async {
-        final _databaseService = locator<DatabaseService>();
-        final _cartService = locator<CartService>();
+        final databaseService = locator<DatabaseService>();
+        final cartService = locator<CartService>();
 
         final cartEntry = MockData.cartEntry1;
 
-        when(_databaseService.get(
+        when(databaseService.get(
           tableName: CartEntry.tableName,
           whereClauses: [
             WhereEqualClause(
@@ -94,7 +92,7 @@ void main() {
 
         final editedEntry = cartEntry.copyWithCount(cartEntry.count + 1);
 
-        when(_databaseService.update(
+        when(databaseService.update(
           tableName: CartEntry.tableName,
           model: editedEntry,
           whereClauses: [
@@ -105,15 +103,15 @@ void main() {
           return 1;
         });
 
-        final result = await _cartService.addProduct(cartEntry.productId);
+        final result = await cartService.addProduct(cartEntry.productId);
 
         expect(result.success, true);
         expect(result.data, isNotNull);
         expect(result.data!, editedEntry);
 
-        expect(_cartService.count, MockData.cartCount + 1);
+        expect(cartService.count, MockData.cartCount + 1);
         expect(
-          _cartService.entries,
+          cartService.entries,
           MockData.cartEntries
               .mapList((p0) => p0.id == editedEntry.id ? editedEntry : p0),
         );
@@ -122,12 +120,12 @@ void main() {
 
     group('Remove product -', () {
       test('should remove entry', () async {
-        final _databaseService = locator<DatabaseService>();
-        final _cartService = locator<CartService>();
+        final databaseService = locator<DatabaseService>();
+        final cartService = locator<CartService>();
 
         final cartEntry = MockData.cartEntry1;
 
-        when(_databaseService.get(
+        when(databaseService.get(
           tableName: CartEntry.tableName,
           whereClauses: [
             WhereEqualClause(
@@ -139,7 +137,7 @@ void main() {
           },
         );
 
-        when(_databaseService.delete(
+        when(databaseService.delete(
           tableName: CartEntry.tableName,
           whereClauses: [
             WhereEqualClause(
@@ -149,25 +147,25 @@ void main() {
           return 1;
         });
 
-        final response = await _cartService.removeProduct(cartEntry.productId);
+        final response = await cartService.removeProduct(cartEntry.productId);
 
         expect(response.success, true);
         expect(response.data, isNull);
 
-        expect(_cartService.count, MockData.cartCount - 1);
+        expect(cartService.count, MockData.cartCount - 1);
         expect(
-          _cartService.entries,
+          cartService.entries,
           MockData.cartEntries.whereList((p0) => p0.id != cartEntry.id),
         );
       });
 
       test('should decrease entry count', () async {
-        final _databaseService = locator<DatabaseService>();
-        final _cartService = locator<CartService>();
+        final databaseService = locator<DatabaseService>();
+        final cartService = locator<CartService>();
 
         final cartEntry = MockData.cartEntry2;
 
-        when(_databaseService.get(
+        when(databaseService.get(
           tableName: CartEntry.tableName,
           whereClauses: [
             WhereEqualClause(
@@ -181,7 +179,7 @@ void main() {
 
         final editedEntry = cartEntry.copyWithCount(cartEntry.count - 1);
 
-        when(_databaseService.update(
+        when(databaseService.update(
           tableName: CartEntry.tableName,
           model: editedEntry,
           whereClauses: [
@@ -192,15 +190,15 @@ void main() {
           return 1;
         });
 
-        final result = await _cartService.removeProduct(cartEntry.productId);
+        final result = await cartService.removeProduct(cartEntry.productId);
 
         expect(result.success, true);
         expect(result.data, isNotNull);
         expect(result.data!, editedEntry);
 
-        expect(_cartService.count, MockData.cartCount - 1);
+        expect(cartService.count, MockData.cartCount - 1);
         expect(
-          _cartService.entries,
+          cartService.entries,
           MockData.cartEntries
               .mapList((p0) => p0.id == editedEntry.id ? editedEntry : p0),
         );
@@ -209,22 +207,21 @@ void main() {
 
     group('Empty -', () {
       test('should empty entries', () async {
-        final _cartService = locator<CartService>();
-        final _databaseService = locator<DatabaseService>();
+        final cartService = locator<CartService>();
+        final databaseService = locator<DatabaseService>();
 
-        when(_databaseService.delete(tableName: CartEntry.tableName))
-            .thenAnswer(
+        when(databaseService.delete(tableName: CartEntry.tableName)).thenAnswer(
           (_) async {
             return MockData.cartEntries.length;
           },
         );
 
-        final result = await _cartService.empty();
+        final result = await cartService.empty();
 
         expect(result.success, true);
         expect(result.data, isNull);
-        expect(_cartService.count, 0);
-        expect(_cartService.entries.isEmpty, true);
+        expect(cartService.count, 0);
+        expect(cartService.entries.isEmpty, true);
       });
     });
   });

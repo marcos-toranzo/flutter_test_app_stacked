@@ -26,7 +26,7 @@ void main() {
 
     group('GET -', () {
       test('should call correctly', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         when(
           client.get(
@@ -37,14 +37,14 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.get(url);
+        final response = await networkService.get(url);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
       });
 
       test('should call correctly with params', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         const params = {'a': 'b'};
 
@@ -60,7 +60,7 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.get(url, params: params);
+        final response = await networkService.get(url, params: params);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
@@ -69,7 +69,7 @@ void main() {
 
     group('POST -', () {
       test('should call correctly', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         when(
           client.post(
@@ -82,14 +82,14 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.post(url);
+        final response = await networkService.post(url);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
       });
 
       test('should call correctly with body', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         const body = {'a': 'b'};
 
@@ -104,7 +104,7 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.post(url, body: body);
+        final response = await networkService.post(url, body: body);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
@@ -113,7 +113,7 @@ void main() {
 
     group('PUT -', () {
       test('should call correctly', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         when(
           client.put(
@@ -126,14 +126,14 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.put(url);
+        final response = await networkService.put(url);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
       });
 
       test('should call correctly with body', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         const body = {'a': 'b'};
 
@@ -148,7 +148,7 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.put(url, body: body);
+        final response = await networkService.put(url, body: body);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
@@ -157,7 +157,7 @@ void main() {
 
     group('PATCH -', () {
       test('should call correctly', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         when(
           client.patch(
@@ -170,14 +170,14 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.patch(url);
+        final response = await networkService.patch(url);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
       });
 
       test('should call correctly with body', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         const body = {'a': 'b'};
 
@@ -192,7 +192,7 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.patch(url, body: body);
+        final response = await networkService.patch(url, body: body);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');
@@ -201,7 +201,7 @@ void main() {
 
     group('DELETE -', () {
       test('should call correctly', () async {
-        final _networkService = locator<NetworkService>();
+        final networkService = locator<NetworkService>();
 
         when(
           client.delete(
@@ -213,7 +213,7 @@ void main() {
           return http.Response('bodyTest', 200);
         });
 
-        final response = await _networkService.delete(url);
+        final response = await networkService.delete(url);
 
         expect(response.statusCode, StatusCode.ok);
         expect(response.body, 'bodyTest');

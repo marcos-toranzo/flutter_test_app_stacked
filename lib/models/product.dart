@@ -51,6 +51,24 @@ class Product {
     );
   }
 
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'title': title,
+      'description': description,
+      'price': price,
+      'discountPercentage': discountPercentage,
+      'rating': rating,
+      'stock': stock,
+      'brand': brand,
+      'category': category,
+      'thumbnail': thumbnail,
+      'images': images,
+    };
+  }
+
+  String toJson() => json.encode(toMap());
+
   @override
   bool operator ==(covariant Product other) {
     if (identical(this, other)) return true;
