@@ -208,12 +208,18 @@ abstract class MockData {
         cartEntry3,
       ];
 
+  static List<Product> get cartProducts {
+    final ids = cartEntries.mapList((entry) => entry.productId);
+
+    return products.whereList((e) => ids.contains(e.id));
+  }
+
   static int get cartCount => cartEntries.reduceAndCompute(
         (acc, element) => acc + element.count,
         0,
       );
 
-  static double get total => products.reduceAndCompute(
+  static double get cartTotal => products.reduceAndCompute(
         (acc, product) {
           final cartEntry = cartEntries
               .firstWhereOrNull((entry) => entry.productId == product.id);
