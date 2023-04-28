@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -6,20 +7,19 @@ import 'package:flutter_app_test_stacked/models/cart_entry.dart';
 import 'package:flutter_app_test_stacked/models/database_model.dart';
 
 const String _databaseName = 'database.db';
+Database? database;
 
 class DatabaseService {
-  Database? _database;
-
   Future<Id> insert({
     required String tableName,
     required DatabaseModel model,
   }) async {
-    if (_database == null) {
+    if (database == null) {
       throw Exception('Database has not been opened.'
           '`DatabaseService.open()` was not called');
     }
 
-    return await _database!.insert(
+    return await database!.insert(
       tableName,
       model.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -31,12 +31,12 @@ class DatabaseService {
     required DatabaseModel model,
     List<WhereClause>? whereClauses,
   }) async {
-    if (_database == null) {
+    if (database == null) {
       throw Exception('Database has not been opened.'
           '`DatabaseService.open()` was not called');
     }
 
-    final whereClausesParsed = _parseWhereClauses(whereClauses);
+    final whereClausesParsed = parseWhereClauses(whereClauses);
 
     if (whereClauses != null) {
       for (var whereClause in whereClauses) {
@@ -44,7 +44,7 @@ class DatabaseService {
       }
     }
 
-    return await _database!.update(
+    return await database!.update(
       tableName,
       model.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -57,14 +57,14 @@ class DatabaseService {
     required String tableName,
     List<WhereClause>? whereClauses,
   }) async {
-    if (_database == null) {
+    if (database == null) {
       throw Exception('Database has not been opened.'
           '`DatabaseService.open()` was not called');
     }
 
-    final whereClausesParsed = _parseWhereClauses(whereClauses);
+    final whereClausesParsed = parseWhereClauses(whereClauses);
 
-    return await _database!.delete(
+    return await database!.delete(
       tableName,
       where: whereClausesParsed.where,
       whereArgs: whereClausesParsed.whereArgs,
@@ -76,14 +76,14 @@ class DatabaseService {
     List<String>? columns,
     List<WhereClause>? whereClauses,
   }) async {
-    if (_database == null) {
+    if (database == null) {
       throw Exception('Database has not been opened.'
           '`DatabaseService.open()` was not called');
     }
 
-    final whereClausesParsed = _parseWhereClauses(whereClauses);
+    final whereClausesParsed = parseWhereClauses(whereClauses);
 
-    final result = await _database!.query(
+    final result = await database!.query(
       tableName,
       columns: columns,
       where: whereClausesParsed.where,
@@ -94,7 +94,7 @@ class DatabaseService {
   }
 
   Future<void> open() async {
-    _database = await openDatabase(
+    database = await openDatabase(
       join(await getDatabasesPath(), _databaseName),
       onCreate: (db, version) async {
         await db.execute('''
@@ -135,19 +135,21 @@ class WhereInClause extends WhereClause<List<Object>> {
   const WhereInClause({required super.column, required super.value});
 }
 
-class _WhereClauseParsingResult {
+@visibleForTesting
+class WhereClauseParsingResult {
   final String? where;
   final List<Object?>? whereArgs;
 
-  const _WhereClauseParsingResult({
+  const WhereClauseParsingResult({
     this.where,
     this.whereArgs,
   });
 }
 
-_WhereClauseParsingResult _parseWhereClauses(List<WhereClause>? whereClauses) {
+@visibleForTesting
+WhereClauseParsingResult parseWhereClauses(List<WhereClause>? whereClauses) {
   if (whereClauses == null) {
-    return const _WhereClauseParsingResult();
+    return const WhereClauseParsingResult();
   }
 
   final List<Object?> whereArgs = [];
@@ -158,21 +160,21 @@ _WhereClauseParsingResult _parseWhereClauses(List<WhereClause>? whereClauses) {
     switch (whereClause.runtimeType) {
       case WhereEqualClause:
         wheres.add('${whereClause.column} = ?');
+        whereArgs.add(whereClause.value);
         break;
       case WhereInClause:
         final whereInClause = whereClause as WhereInClause;
 
         wheres.add(
-          '${whereClause.column} IN'
+          '${whereClause.column} IN '
           '(${List.filled(whereInClause.value.length, '?').join(', ')})',
         );
+        whereArgs.addAll(whereClause.value);
         break;
     }
-
-    whereArgs.add(whereClause.value);
   }
 
-  return _WhereClauseParsingResult(
+  return WhereClauseParsingResult(
     where: wheres.join(' AND '),
     whereArgs: whereArgs,
   );

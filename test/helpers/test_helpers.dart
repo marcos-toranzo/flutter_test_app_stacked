@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
@@ -25,6 +26,7 @@ import 'test_helpers.mocks.dart';
   MockSpec<CartService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<DatabaseService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<http.Client>(onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<sqflite.Database>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
 void registerServices() {
