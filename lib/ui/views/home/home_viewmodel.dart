@@ -71,11 +71,25 @@ class HomeViewModel extends ReactiveViewModel {
             limit: productsLimit,
             skip: page * productsLimit,
             search: _searchText,
+            select: [
+              ProductField.id,
+              ProductField.price,
+              ProductField.thumbnail,
+              ProductField.title,
+              ProductField.discountPercentage,
+            ],
           )
         : await _productService.getCategoryProducts(
             category,
             limit: productsLimit,
             skip: page * productsLimit,
+            select: [
+              ProductField.id,
+              ProductField.price,
+              ProductField.thumbnail,
+              ProductField.title,
+              ProductField.discountPercentage,
+            ],
           );
 
     if (result.success) {

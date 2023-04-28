@@ -5,8 +5,8 @@ class CartEntry extends DatabaseModel {
   static const String columnProductId = 'productId';
   static const String columnCount = 'count';
 
-  final int productId;
-  final int count;
+  late final int productId;
+  late final int count;
 
   CartEntry({
     super.id,
@@ -14,12 +14,9 @@ class CartEntry extends DatabaseModel {
     this.count = 1,
   });
 
-  factory CartEntry.fromMap(Map<String, dynamic> map) {
-    return CartEntry(
-      id: map['id'],
-      productId: map['productId'],
-      count: map['count'],
-    );
+  CartEntry.fromMap(Map<String, dynamic> map) : super.fromMap(map) {
+    productId = map['productId'];
+    count = map['count'];
   }
 
   @override

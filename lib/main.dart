@@ -18,7 +18,7 @@ void main() async {
 }
 
 class FlutterTestStackedApp extends StatelessWidget {
-  const FlutterTestStackedApp({Key? key}) : super(key: key);
+  const FlutterTestStackedApp({super.key});
 
   @override
   Widget build(BuildContext context) {

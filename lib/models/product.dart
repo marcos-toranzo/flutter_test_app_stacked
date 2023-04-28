@@ -13,7 +13,7 @@ class Product {
   final String thumbnail;
   final List<String> images;
 
-  Product({
+  const Product({
     required this.id,
     required this.title,
     required this.description,
@@ -35,15 +35,16 @@ class Product {
     return Product(
       id: map['id'],
       title: map['title'],
-      description: map['description'],
+      description: map['description'] ?? '',
       price: map['price'].toDouble(),
-      discountPercentage: map['discountPercentage'].toDouble(),
-      rating: map['rating'].toDouble(),
-      stock: map['stock'],
-      brand: map['brand'],
-      category: map['category'],
-      thumbnail: map['thumbnail'],
-      images: (map['images'] as List).cast<String>(),
+      discountPercentage: map['discountPercentage']?.toDouble() ?? 0,
+      rating: map['rating']?.toDouble() ?? 0,
+      stock: map['stock'] ?? 0,
+      brand: map['brand'] ?? '',
+      category: map['category'] ?? '',
+      thumbnail: map['thumbnail'] ?? '',
+      images:
+          map['images'] != null ? (map['images'] as List).cast<String>() : [],
     );
   }
 }

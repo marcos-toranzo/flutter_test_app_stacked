@@ -52,6 +52,12 @@ class CartViewModel extends ReactiveViewModel {
       final response = await runBusyFuture(
         _productService.getProductsWithIds(
           cartEntries.mapList((entry) => entry.productId),
+          select: [
+            ProductField.id,
+            ProductField.price,
+            ProductField.thumbnail,
+            ProductField.title,
+          ],
         ),
         busyObject: fetchingProducts,
       );

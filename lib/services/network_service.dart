@@ -26,7 +26,7 @@ class NetworkService {
   Future<NetworkResponse> _request(
     HttpMethod method,
     String endpoint, {
-    Map<String, String> params = const {},
+    Map<String, dynamic> params = const {},
     Map<String, dynamic>? body,
   }) async {
     final url = 'https://dummyjson.com/$endpoint';
@@ -51,7 +51,7 @@ class NetworkService {
 
   Future<NetworkResponse> get(
     String endpoint, {
-    Map<String, String> params = const {},
+    Map<String, dynamic> params = const {},
   }) =>
       _request(
         (endpoint, {body, encoding, headers}) =>

@@ -32,6 +32,7 @@ dev_dependencies:
   stacked_generator: ^1.0.0
   mockito: ^5.3.2
   collection: ^1.16.0
+  network_image_mock: ^2.1.1
 
 flutter:
   uses-material-design: true

@@ -5,6 +5,20 @@ import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 
+enum ProductField {
+  id,
+  title,
+  description,
+  price,
+  discountPercentage,
+  rating,
+  stock,
+  brand,
+  category,
+  thumbnail,
+  images,
+}
+
 class ProductService {
   final _networkService = locator<NetworkService>();
 
@@ -28,15 +42,22 @@ class ProductService {
     int limit = 0,
     int skip = 0,
     String search = '',
+    List<ProductField>? select,
   }) async {
     try {
+      final Map<String, dynamic> params = {
+        'limit': limit.toString(),
+        'skip': skip.toString(),
+        'q': search,
+      };
+
+      if (select != null) {
+        params['select'] = select.map((e) => e.name).toList();
+      }
+
       final response = await _networkService.get(
         'products/search',
-        params: {
-          'limit': limit.toString(),
-          'skip': skip.toString(),
-          'q': search,
-        },
+        params: params,
       );
 
       if (response.statusCode != StatusCode.ok) {
@@ -60,9 +81,15 @@ class ProductService {
     }
   }
 
-  Future<ApiResponse<List<Product>>> getProductsWithIds(List<int> ids) async {
+  Future<ApiResponse<List<Product>>> getProductsWithIds(
+    List<int> ids, {
+    List<ProductField>? select,
+  }) async {
     try {
-      final productsResult = await getProducts(limit: 100);
+      final productsResult = await getProducts(
+        limit: 100,
+        select: select,
+      );
 
       if (!productsResult.success) {
         return productsResult;
@@ -81,14 +108,21 @@ class ProductService {
     String category, {
     int limit = 0,
     int skip = 0,
+    List<ProductField>? select,
   }) async {
     try {
+      final Map<String, dynamic> params = {
+        'limit': limit.toString(),
+        'skip': skip.toString(),
+      };
+
+      if (select != null) {
+        params['select'] = select.map((e) => e.name).toList();
+      }
+
       final response = await _networkService.get(
         'products/category/$category',
-        params: {
-          'limit': limit.toString(),
-          'skip': skip.toString(),
-        },
+        params: params,
       );
 
       if (response.statusCode != StatusCode.ok) {
@@ -112,9 +146,21 @@ class ProductService {
     }
   }
 
-  Future<ApiResponse<Product>> getProduct(int id) async {
+  Future<ApiResponse<Product>> getProduct(
+    int id, {
+    List<ProductField>? select,
+  }) async {
     try {
-      final response = await _networkService.get('products/$id');
+      final Map<String, dynamic> params = {};
+
+      if (select != null) {
+        params['select'] = select.map((e) => e.name).toList();
+      }
+
+      final response = await _networkService.get(
+        'products/$id',
+        params: params,
+      );
 
       if (response.statusCode != StatusCode.ok) {
         return const ErrorApiResponse();
