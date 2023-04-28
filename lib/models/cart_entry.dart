@@ -1,4 +1,5 @@
-import 'package:flutter_app_test_stacked/models/model.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter_app_test_stacked/models/database_model.dart';
 
 class CartEntry extends DatabaseModel {
   static const String tableName = 'cartEntries';
@@ -33,4 +34,14 @@ class CartEntry extends DatabaseModel {
       count: count,
     );
   }
+
+  @override
+  bool operator ==(covariant CartEntry other) {
+    if (identical(this, other)) return true;
+
+    return other.productId == productId && other.count == count;
+  }
+
+  @override
+  int get hashCode => productId.hashCode ^ count.hashCode;
 }

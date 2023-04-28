@@ -8,7 +8,7 @@ import 'dart:ui' as _i6;
 
 import 'package:flutter/material.dart' as _i4;
 import 'package:flutter_app_test_stacked/models/cart_entry.dart' as _i10;
-import 'package:flutter_app_test_stacked/models/model.dart' as _i12;
+import 'package:flutter_app_test_stacked/models/database_model.dart' as _i12;
 import 'package:flutter_app_test_stacked/models/product.dart' as _i8;
 import 'package:flutter_app_test_stacked/services/cart_service.dart' as _i9;
 import 'package:flutter_app_test_stacked/services/database_service.dart'
@@ -525,7 +525,8 @@ class MockDialogService extends _i1.Mock implements _i3.DialogService {
       _i4.BuildContext,
       _i3.DialogRequest<dynamic>,
       dynamic Function(_i3.DialogResponse<dynamic>),
-    )? builder,
+    )?
+        builder,
   }) =>
       super.noSuchMethod(
         Invocation.method(
@@ -690,6 +691,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
     int? limit = 0,
     int? skip = 0,
     String? search = r'',
+    List<_i7.ProductField>? select,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -699,6 +701,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
             #limit: limit,
             #skip: skip,
             #search: search,
+            #select: select,
           },
         ),
         returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
@@ -711,6 +714,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
               #limit: limit,
               #skip: skip,
               #search: search,
+              #select: select,
             },
           ),
         )),
@@ -725,17 +729,21 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
               #limit: limit,
               #skip: skip,
               #search: search,
+              #select: select,
             },
           ),
         )),
       ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
   @override
   _i5.Future<_i2.ApiResponse<List<_i8.Product>>> getProductsWithIds(
-          List<int>? ids) =>
+    List<int>? ids, {
+    List<_i7.ProductField>? select,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #getProductsWithIds,
           [ids],
+          {#select: select},
         ),
         returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
             _FakeApiResponse_0<List<_i8.Product>>(
@@ -743,6 +751,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           Invocation.method(
             #getProductsWithIds,
             [ids],
+            {#select: select},
           ),
         )),
         returnValueForMissingStub:
@@ -752,6 +761,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           Invocation.method(
             #getProductsWithIds,
             [ids],
+            {#select: select},
           ),
         )),
       ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
@@ -760,6 +770,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
     String? category, {
     int? limit = 0,
     int? skip = 0,
+    List<_i7.ProductField>? select,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -768,6 +779,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           {
             #limit: limit,
             #skip: skip,
+            #select: select,
           },
         ),
         returnValue: _i5.Future<_i2.ApiResponse<List<_i8.Product>>>.value(
@@ -779,6 +791,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
             {
               #limit: limit,
               #skip: skip,
+              #select: select,
             },
           ),
         )),
@@ -792,16 +805,21 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
             {
               #limit: limit,
               #skip: skip,
+              #select: select,
             },
           ),
         )),
       ) as _i5.Future<_i2.ApiResponse<List<_i8.Product>>>);
   @override
-  _i5.Future<_i2.ApiResponse<_i8.Product>> getProduct(int? id) =>
+  _i5.Future<_i2.ApiResponse<_i8.Product>> getProduct(
+    int? id, {
+    List<_i7.ProductField>? select,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #getProduct,
           [id],
+          {#select: select},
         ),
         returnValue: _i5.Future<_i2.ApiResponse<_i8.Product>>.value(
             _FakeApiResponse_0<_i8.Product>(
@@ -809,6 +827,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           Invocation.method(
             #getProduct,
             [id],
+            {#select: select},
           ),
         )),
         returnValueForMissingStub:
@@ -818,6 +837,7 @@ class MockProductService extends _i1.Mock implements _i7.ProductService {
           Invocation.method(
             #getProduct,
             [id],
+            {#select: select},
           ),
         )),
       ) as _i5.Future<_i2.ApiResponse<_i8.Product>>);
@@ -830,7 +850,7 @@ class MockNetworkService extends _i1.Mock implements _i2.NetworkService {
   @override
   _i5.Future<_i2.NetworkResponse> get(
     String? endpoint, {
-    Map<String, String>? params = const {},
+    Map<String, dynamic>? params = const {},
   }) =>
       (super.noSuchMethod(
         Invocation.method(

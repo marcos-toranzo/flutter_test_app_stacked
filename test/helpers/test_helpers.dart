@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
@@ -113,5 +117,522 @@ MockDatabaseService getAndRegisterDatabaseService() {
 void _removeRegistrationIfExists<T extends Object>() {
   if (locator.isRegistered<T>()) {
     locator.unregister<T>();
+  }
+}
+
+Future<void> Function(TestHelper helper)? _setUpFn;
+Widget Function()? _setUpScreen;
+Widget Function(BuildContext)? _setUpScaffoldBody;
+Future<void> Function(TestHelper helper)? _tearDownFn;
+
+class InitialTestScreen extends StatelessWidget {
+  final Widget Function()? screen;
+  final Widget Function(BuildContext)? scaffoldBody;
+
+  const InitialTestScreen({super.key, this.screen, this.scaffoldBody})
+      : assert(screen != null || scaffoldBody != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return screen != null
+        ? screen!()
+        : Scaffold(
+            body: scaffoldBody!(context),
+          );
+  }
+}
+
+Future<void> Function(WidgetTester) testWidget(
+  Future<void> Function(TestHelper helper) callback, {
+  FutureOr<void> Function()? setUp,
+  Widget Function()? screen,
+  Widget Function(BuildContext)? scaffoldBody,
+  bool wait = true,
+  bool settle = true,
+}) {
+  return (tester) async {
+    await setUp?.call();
+
+    final helper = TestHelper(tester);
+
+    await helper.pumpApp(
+      InitialTestScreen(
+        screen: screen ?? _setUpScreen,
+        scaffoldBody: scaffoldBody ?? _setUpScaffoldBody,
+      ),
+      wait: wait,
+      settle: settle,
+    );
+
+    if (_setUpFn != null) {
+      await _setUpFn!(helper);
+    }
+
+    await callback(helper);
+
+    if (_tearDownFn != null) {
+      await _tearDownFn!(helper);
+    }
+  };
+}
+
+class TestHelper {
+  final WidgetTester tester;
+
+  const TestHelper(this.tester);
+
+  static void setUp({
+    Future<void> Function(TestHelper helper)? onInit,
+    Future<void> Function(TestHelper helper)? onTearDown,
+    Widget Function()? screen,
+    Widget Function(BuildContext)? scaffoldBody,
+  }) {
+    _setUpFn = onInit;
+    _tearDownFn = onTearDown;
+    _setUpScreen = screen;
+    _setUpScaffoldBody = scaffoldBody;
+  }
+
+  static Future<void> initApp<T extends Object>({
+    bool mockNavigationService = false,
+    bool mockBottomSheetService = false,
+    bool mockDialogService = false,
+    bool mockProductService = false,
+    bool mockNetworkService = false,
+    bool mockCartService = false,
+    bool mockDatabaseService = false,
+    VoidCallback? onNavigationServiceRegistered,
+    VoidCallback? onBottomSheetServiceRegistered,
+    VoidCallback? onDialogServiceRegistered,
+    VoidCallback? onProductServiceRegistered,
+    VoidCallback? onNetworkServiceRegistered,
+    VoidCallback? onCartServiceRegistered,
+    VoidCallback? onDatabaseServiceRegistered,
+    SheetResponse<T>? showCustomSheetResponse,
+  }) async {
+    _removeRegistrationIfExists<NetworkService>();
+    locator.registerSingleton<NetworkService>(
+      mockNetworkService ? MockNetworkService() : NetworkService(),
+    );
+
+    onNavigationServiceRegistered?.call();
+
+    _removeRegistrationIfExists<DatabaseService>();
+    locator.registerSingleton<DatabaseService>(
+      mockDatabaseService ? MockDatabaseService() : DatabaseService(),
+    );
+
+    onDatabaseServiceRegistered?.call();
+
+    _removeRegistrationIfExists<NavigationService>();
+    locator.registerSingleton<NavigationService>(
+      mockNavigationService ? MockNavigationService() : NavigationService(),
+    );
+
+    onNavigationServiceRegistered?.call();
+
+    _removeRegistrationIfExists<BottomSheetService>();
+    if (mockBottomSheetService) {
+      final service = MockBottomSheetService();
+
+      when(service.showCustomSheet<T, T>(
+        enableDrag: anyNamed('enableDrag'),
+        enterBottomSheetDuration: anyNamed('enterBottomSheetDuration'),
+        exitBottomSheetDuration: anyNamed('exitBottomSheetDuration'),
+        ignoreSafeArea: anyNamed('ignoreSafeArea'),
+        isScrollControlled: anyNamed('isScrollControlled'),
+        barrierDismissible: anyNamed('barrierDismissible'),
+        additionalButtonTitle: anyNamed('additionalButtonTitle'),
+        variant: anyNamed('variant'),
+        title: anyNamed('title'),
+        hasImage: anyNamed('hasImage'),
+        imageUrl: anyNamed('imageUrl'),
+        showIconInMainButton: anyNamed('showIconInMainButton'),
+        mainButtonTitle: anyNamed('mainButtonTitle'),
+        showIconInSecondaryButton: anyNamed('showIconInSecondaryButton'),
+        secondaryButtonTitle: anyNamed('secondaryButtonTitle'),
+        showIconInAdditionalButton: anyNamed('showIconInAdditionalButton'),
+        takesInput: anyNamed('takesInput'),
+        barrierColor: anyNamed('barrierColor'),
+        barrierLabel: anyNamed('barrierLabel'),
+        customData: anyNamed('customData'),
+        data: anyNamed('data'),
+        description: anyNamed('description'),
+      )).thenAnswer((realInvocation) =>
+          Future.value(showCustomSheetResponse ?? SheetResponse<T>()));
+
+      locator.registerSingleton<BottomSheetService>(service);
+    } else {
+      locator.registerSingleton<BottomSheetService>(BottomSheetService());
+    }
+
+    onBottomSheetServiceRegistered?.call();
+
+    _removeRegistrationIfExists<DialogService>();
+    locator.registerSingleton<DialogService>(
+      mockDialogService ? MockDialogService() : DialogService(),
+    );
+
+    onDialogServiceRegistered?.call();
+
+    _removeRegistrationIfExists<ProductService>();
+    locator.registerSingleton<ProductService>(
+      mockProductService ? MockProductService() : ProductService(),
+    );
+
+    onProductServiceRegistered?.call();
+
+    _removeRegistrationIfExists<CartService>();
+    locator.registerSingleton<CartService>(
+      mockCartService ? MockCartService() : CartService(),
+    );
+
+    onCartServiceRegistered?.call();
+  }
+
+  T widgetByType<T extends Widget>({
+    bool skipOffstage = true,
+    void Function(T widget)? expecting,
+  }) {
+    final widget = _getWidget<T>(
+      _findWidgetByType(T, findsOneWidget, skipOffstage: skipOffstage),
+    );
+
+    expecting?.call(widget);
+
+    return widget;
+  }
+
+  List<T> nWidgetsByType<T extends Widget>(
+    int n, {
+    bool skipOffstage = true,
+  }) {
+    return _getWidgets(
+      _findWidgetByType(T, findsNWidgets(n), skipOffstage: skipOffstage),
+    );
+  }
+
+  T widgetByKey<T extends Widget>(
+    Key key, {
+    bool skipOffstage = true,
+    void Function(T widget)? expecting,
+  }) {
+    final widget = _getWidget<T>(
+      _findWidgetByKey(key, findsOneWidget, skipOffstage: skipOffstage),
+    );
+
+    expecting?.call(widget);
+
+    return widget;
+  }
+
+  T widgetByValueKey<T extends Widget>(
+    String value, {
+    bool skipOffstage = true,
+  }) {
+    return widgetByKey(ValueKey(value), skipOffstage: skipOffstage);
+  }
+
+  void noWidgetByType(Type type, {bool skipOffstage = true}) {
+    _findWidgetByType(type, findsNothing, skipOffstage: skipOffstage);
+  }
+
+  void noWidgetByKey(Key key, {bool skipOffstage = true}) {
+    _findWidgetByKey(key, findsNothing, skipOffstage: skipOffstage);
+  }
+
+  void noWidgetByValueKey(String value, {bool skipOffstage = true}) {
+    noWidgetByKey(ValueKey(value), skipOffstage: skipOffstage);
+  }
+
+  void noText(String text, {bool skipOffstage = true}) {
+    _findWidget(
+      () => find.text(text, skipOffstage: skipOffstage),
+      findsNothing,
+    );
+  }
+
+  Text text(
+    String text, {
+    bool skipOffstage = false,
+    void Function(Text textWidget)? expecting,
+  }) {
+    final textWidget = _getWidget<Text>(
+      _findWidget(
+        () => find.text(text, skipOffstage: skipOffstage),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(textWidget);
+
+    return textWidget;
+  }
+
+  T widgetWithText<T extends Widget>(
+    String text, {
+    bool skipOffstage = true,
+    void Function(T widget)? expecting,
+  }) {
+    final widget = _getWidget<T>(
+      _findWidget(
+        () => find.widgetWithText(T, text, skipOffstage: skipOffstage),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(widget);
+
+    return widget;
+  }
+
+  T descendant<T extends Widget>(
+    Widget of, {
+    bool skipOffstage = true,
+    void Function(T widget)? expecting,
+  }) {
+    final widget = _getWidget<T>(
+      _findWidget(
+        () => find.descendant(
+          of: find.byWidget(of, skipOffstage: skipOffstage),
+          matching: find.byType(T, skipOffstage: skipOffstage),
+          skipOffstage: skipOffstage,
+        ),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(widget);
+
+    return widget;
+  }
+
+  Text descendantText({
+    required Widget of,
+    required String text,
+    bool skipOffstage = true,
+    void Function(Text textWidget)? expecting,
+  }) {
+    final textWidget = _getWidget<Text>(
+      _findWidget(
+        () => find.descendant(
+          of: find.byWidget(of, skipOffstage: skipOffstage),
+          matching: find.text(text, skipOffstage: skipOffstage),
+          skipOffstage: skipOffstage,
+        ),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(textWidget);
+
+    return textWidget;
+  }
+
+  Future<void> tap(
+    Type type, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+    bool ensureVisible = false,
+  }) {
+    final skipOff = ensureVisible ? false : skipOffstage;
+
+    return _tap(
+      find.byType(type, skipOffstage: skipOff),
+      ensureVisible: ensureVisible,
+      warnIfMissed: warnIfMissed,
+      pumpAndSettle: pumpAndSettle,
+    );
+  }
+
+  Future<void> tapWithValueKey(
+    String value, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+    bool ensureVisible = false,
+  }) {
+    final skipOff = ensureVisible ? false : skipOffstage;
+
+    return _tap(
+      find.byKey(ValueKey(value), skipOffstage: skipOff),
+      ensureVisible: ensureVisible,
+      warnIfMissed: warnIfMissed,
+      pumpAndSettle: pumpAndSettle,
+    );
+  }
+
+  Future<void> tapWidget(
+    Widget widget, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+    bool ensureVisible = false,
+  }) {
+    final skipOff = ensureVisible ? false : skipOffstage;
+
+    return _tap(
+      find.byWidget(widget, skipOffstage: skipOff),
+      ensureVisible: ensureVisible,
+      warnIfMissed: warnIfMissed,
+      pumpAndSettle: pumpAndSettle,
+    );
+  }
+
+  Future<void> enterText(
+    Widget widget,
+    String text, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+  }) async {
+    await tester.enterText(
+      find.byWidget(widget, skipOffstage: skipOffstage),
+      text,
+    );
+
+    if (pumpAndSettle) {
+      await tester.pumpAndSettle();
+    }
+  }
+
+  Future<void> enterTextWithValueKey(
+    String value,
+    String text, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+  }) async {
+    await tester.enterText(
+      find.byKey(ValueKey(value), skipOffstage: skipOffstage),
+      text,
+    );
+
+    if (pumpAndSettle) {
+      await tester.pumpAndSettle();
+    }
+  }
+
+  BuildContext getBuildContext(Type type) {
+    return tester.element(find.byType(type));
+  }
+
+  ThemeData getTheme(Type type) {
+    final context = getBuildContext(type);
+
+    return Theme.of(context);
+  }
+
+  NavigatorState getNavigator() {
+    return tester.state(find.byType(Navigator));
+  }
+
+  Future<void> pumpApp(
+    Widget child, {
+    bool wait = true,
+    bool settle = true,
+  }) async {
+    await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
+
+    if (wait) {
+      await this.wait(seconds: 20);
+    }
+
+    if (settle) {
+      await this.settle();
+    }
+  }
+
+  Future<void> settle() async {
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> wait({
+    int days = 0,
+    int hours = 0,
+    int minutes = 0,
+    int seconds = 0,
+    int milliseconds = 0,
+    int microseconds = 0,
+  }) async {
+    await tester.pump(Duration(seconds: seconds));
+  }
+
+  Future<void> _tap(
+    Finder finder, {
+    bool warnIfMissed = true,
+    bool pumpAndSettle = true,
+    bool ensureVisible = true,
+  }) async {
+    if (ensureVisible) {
+      await tester.ensureVisible(finder);
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(
+      finder,
+      warnIfMissed: warnIfMissed,
+    );
+
+    if (pumpAndSettle) {
+      await tester.pumpAndSettle();
+    }
+  }
+
+  Finder _findWidget(Finder Function() finderFn, Matcher matcher) {
+    final widgetFinder = finderFn();
+    expect(widgetFinder, matcher);
+
+    return widgetFinder;
+  }
+
+  Finder _findWidgetByType(
+    Type type,
+    Matcher matcher, {
+    bool skipOffstage = true,
+  }) {
+    return _findWidget(
+      () => find.byType(type, skipOffstage: skipOffstage),
+      matcher,
+    );
+  }
+
+  Finder _findWidgetByKey(
+    Key key,
+    Matcher matcher, {
+    bool skipOffstage = true,
+  }) {
+    return _findWidget(
+      () => find.byKey(key, skipOffstage: skipOffstage),
+      matcher,
+    );
+  }
+
+  T _getWidget<T extends Widget>(Finder finder) {
+    return tester.widget<T>(finder);
+  }
+
+  List<T> _getWidgets<T extends Widget>(Finder finder) {
+    return tester.widgetList<T>(finder).toList();
+  }
+}
+
+class MockFlutterTestStackedApp extends StatelessWidget {
+  final Widget child;
+
+  const MockFlutterTestStackedApp({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Stacked',
+      theme: Theme.of(context).copyWith(
+        textTheme: Theme.of(context).textTheme.apply(
+              fontFamily: 'Mulish',
+            ),
+      ),
+      home: child,
+    );
   }
 }

@@ -1,8 +1,11 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter/foundation.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
 import 'package:flutter_app_test_stacked/app/utils/types.dart';
 import 'package:flutter_app_test_stacked/models/cart_entry.dart';
-import 'package:flutter_app_test_stacked/models/model.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:flutter_app_test_stacked/models/database_model.dart';
 
 const String _databaseName = 'database.db';
 
@@ -114,6 +117,16 @@ abstract class WhereClause<T> {
   final T value;
 
   const WhereClause({required this.column, required this.value});
+
+  @override
+  bool operator ==(covariant WhereClause<T> other) {
+    if (identical(this, other)) return true;
+
+    return other.column == column && other.value == value;
+  }
+
+  @override
+  int get hashCode => column.hashCode ^ value.hashCode;
 }
 
 class WhereEqualClause extends WhereClause<Object> {

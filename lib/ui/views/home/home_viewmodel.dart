@@ -29,8 +29,6 @@ class HomeViewModel extends ReactiveViewModel {
 
   Future<bool> init() async {
     final result = _fetchCategories();
-    _cartService.getEntries();
-
     rebuildUi();
 
     return result;
@@ -55,12 +53,7 @@ class HomeViewModel extends ReactiveViewModel {
     return true;
   }
 
-  Future<bool> refreshCategories() async {
-    final result = _fetchCategories();
-    rebuildUi();
-
-    return result;
-  }
+  Future<bool> refreshCategories() => init();
 
   Future<ProductFetchingResult> getCategoryProducts(
     String category,

@@ -19,7 +19,7 @@ class CartViewModel extends ReactiveViewModel {
   Map<int, CartEntry> get productIdCartEntryMap {
     final Map<int, CartEntry> result = {};
 
-    for (var cartEntry in _cartService.entries ?? []) {
+    for (var cartEntry in _cartService.entries) {
       result[cartEntry.productId] = cartEntry;
     }
 

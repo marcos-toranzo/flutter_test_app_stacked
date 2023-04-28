@@ -2,7 +2,7 @@ import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/app/utils/types.dart';
 import 'package:flutter_app_test_stacked/models/cart_entry.dart';
-import 'package:flutter_app_test_stacked/models/model.dart';
+import 'package:flutter_app_test_stacked/models/database_model.dart';
 import 'package:flutter_app_test_stacked/services/database_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:stacked/stacked.dart';
@@ -12,34 +12,30 @@ class CartService with ListenableServiceMixin {
 
   CartService() {
     listenToReactiveValues([_entries]);
+    getEntries();
   }
 
   int get count =>
-      entries?.reduceAndCompute(
-        (acc, element) => acc! + element.count,
-        0,
-      ) ??
-      0;
+      entries.reduceAndCompute((acc, element) => acc + element.count, 0);
 
-  List<CartEntry>? _entries;
-  List<CartEntry>? get entries => _entries != null ? [..._entries!] : null;
+  List<CartEntry> _entries = [];
+  List<CartEntry> get entries => [..._entries];
 
-  Future<void> _update(List<CartEntry>? cartEntries) async {
+  void _update(List<CartEntry> cartEntries) async {
     _entries = cartEntries;
     notifyListeners();
   }
 
-  Future<void> _updateEntry(CartEntry entry) async {
-    _update(_entries
-        ?.mapList((element) => element.id == entry.id ? entry : element));
+  void _updateEntry(CartEntry entry) async {
+    _update(_entries.mapList((e) => e.id == entry.id ? entry : e));
   }
 
-  Future<void> _updateNewEntry(CartEntry entry) async {
-    _update([..._entries ?? [], entry]);
+  void _updateNewEntry(CartEntry entry) async {
+    _update([..._entries, entry]);
   }
 
-  Future<void> _updateDeleteEntry(CartEntry entry) async {
-    _update(_entries?.whereList((element) => element.id != entry.id));
+  void _updateDeleteEntry(CartEntry entry) async {
+    _update(_entries.whereList((e) => e.id != entry.id));
   }
 
   Future<ApiResponse<List<CartEntry>>> getEntries() async {
@@ -83,7 +79,6 @@ class CartService with ListenableServiceMixin {
       }
 
       _updateEntry(editedEntry);
-      notifyListeners();
 
       return SuccessApiResponse(
         data: editedEntry,
@@ -107,7 +102,6 @@ class CartService with ListenableServiceMixin {
     );
 
     _updateNewEntry(newEntry);
-    notifyListeners();
 
     return SuccessApiResponse(
       data: newEntry,
@@ -169,11 +163,11 @@ class CartService with ListenableServiceMixin {
       tableName: CartEntry.tableName,
     );
 
-    if (deleteCount != count) {
+    if (deleteCount != entries.length) {
       return const ErrorApiResponse();
     }
 
-    _update(null);
+    _update([]);
 
     return const SuccessApiResponse();
   }
