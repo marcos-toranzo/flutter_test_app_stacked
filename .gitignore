@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Stacked generated files
+/lib/app/app.bottomsheets.dart
+/lib/app/app.dialogs.dart
+/lib/app/app.locator.dart
+/lib/app/app.router.dart
+/lib/test/helpers/test_helpers.mocks.dart
