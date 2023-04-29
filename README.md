@@ -6,4 +6,6 @@ Basic functionalities:
 - Show a paginated list with search.
 - Show details of a product.
 - Handle a cart locally. For this the app uses the [sqflite](https://pub.dev/packages/sqflite) package to store the data.
-  
+
+Required Stacked CLI to generate files. Run `stacked generate` to generate necessary files.
+ 
