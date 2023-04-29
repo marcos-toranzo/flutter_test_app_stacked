@@ -19,7 +19,7 @@ void main() {
     return json.encode(body);
   }
 
-  group('NetworkServiceTest -', () {
+  group('NetworkService Tests -', () {
     setUp(() => TestHelper.initApp());
 
     tearDown(() => locator.reset());

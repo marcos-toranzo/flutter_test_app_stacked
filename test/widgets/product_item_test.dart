@@ -7,7 +7,7 @@ import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
-  group('ProductItemTest -', () {
+  group('ProductItem Tests -', () {
     testWidgets(
       'should display product preview',
       (widgetTester) async {

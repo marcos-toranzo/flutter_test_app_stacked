@@ -11,7 +11,7 @@ import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
-  group('CartServiceTest -', () {
+  group('CartService Tests -', () {
     setUp(() {
       TestHelper.initApp(
         mockDatabaseService: true,

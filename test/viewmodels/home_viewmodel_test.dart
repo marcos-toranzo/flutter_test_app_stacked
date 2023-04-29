@@ -11,7 +11,7 @@ import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
-  group('HomeViewmodelTest -', () {
+  group('HomeViewmodel Tests -', () {
     setUp(
       () => TestHelper.initApp(
         mockProductService: true,

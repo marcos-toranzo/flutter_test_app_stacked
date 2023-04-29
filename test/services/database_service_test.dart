@@ -13,7 +13,7 @@ void main() {
   final db = MockDatabase();
   database = db;
 
-  group('DatabaseServiceTest -', () {
+  group('DatabaseService Tests -', () {
     setUp(() => TestHelper.initApp());
 
     tearDown(() => locator.reset());

@@ -11,7 +11,7 @@ import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
-  group('ProductServiceTest -', () {
+  group('ProductService Tests -', () {
     setUp(() {
       TestHelper.initApp(
         mockNetworkService: true,
