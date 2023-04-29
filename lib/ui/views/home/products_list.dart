@@ -47,23 +47,25 @@ class ProductsListState extends State<ProductsList> {
   Future<void> _fetchPage(int page) async {
     final result = await widget.fetchPage(page);
 
-    if (!_controllerDisposed) {
-      final products = result.products;
-
-      if (products == null) {
-        _pagingController.error = 'error';
-
-        return;
-      }
-
-      if (result.last) {
-        _pagingController.appendLastPage(products);
-
-        return;
-      }
-
-      _pagingController.appendPage(products, page + 1);
+    if (_controllerDisposed) {
+      return;
     }
+
+    final products = result.products;
+
+    if (products == null) {
+      _pagingController.error = 'error';
+
+      return;
+    }
+
+    if (result.last) {
+      _pagingController.appendLastPage(products);
+
+      return;
+    }
+
+    _pagingController.appendPage(products, page + 1);
   }
 
   @override

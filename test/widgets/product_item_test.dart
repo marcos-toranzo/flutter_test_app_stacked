@@ -11,7 +11,7 @@ void main() {
     testWidgets(
       'should display product preview',
       (widgetTester) async {
-        int count = 0;
+        bool pressed = false;
 
         const product = MockData.product1;
 
@@ -19,7 +19,7 @@ void main() {
           scaffoldBodyBuilder: (_) => ProductItem(
             product: product,
             onTap: () {
-              count = 1;
+              pressed = true;
             },
           ),
           mockNetworkImage: true,
@@ -36,7 +36,7 @@ void main() {
 
             await helper.tap(ProductItem);
 
-            expect(count, 1);
+            assert(pressed);
           },
         )(widgetTester);
       },

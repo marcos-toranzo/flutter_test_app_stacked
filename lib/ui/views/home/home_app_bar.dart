@@ -11,11 +11,11 @@ class HomeAppBar extends AppBar {
     TabController? tabController,
     void Function(String searchText)? onSearchTextChanged,
     GlobalKey<FormFieldState>? searchFieldKey,
-    required bool tabsLoading,
+    bool tabsLoading = false,
     required List<String> tabsLabels,
     required VoidCallback onCartButtonPressed,
     required VoidCallback onCategoriesRefresh,
-    required int cartCount,
+    int cartCount = 0,
   }) : super(
           backgroundColor: kcAppBarColor,
           shadowColor: kcAccentColor.withAlpha(120),
@@ -88,7 +88,7 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
       isScrollable: true,
       physics: const BouncingScrollPhysics(),
       indicator: const DotIndicator(),
-      tabs: tabsLabels.mapList((e) => Text(e)),
+      tabs: tabsLabels.mapList(Text.new),
     );
 
     late final List<Widget> toShow;
@@ -116,6 +116,7 @@ class AppTabBar extends StatelessWidget with PreferredSizeWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 10.0),
                   child: InkWell(
+                    key: const ValueKey('appTabBarRefreshButton'),
                     onTap: onCategoriesRefresh,
                     borderRadius: circularBorderRadius,
                     child: Padding(

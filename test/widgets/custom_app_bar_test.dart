@@ -39,8 +39,8 @@ void main() {
     testWidgets(
       'should show buttons',
       (widgetTester) async {
-        int count1 = 0;
-        int count2 = 0;
+        bool button1Pressed = false;
+        bool button2Pressed = false;
 
         await testWidget(
           screenBuilder: (_) => Scaffold(
@@ -50,14 +50,14 @@ void main() {
                 CustomAppBarButton(
                   key: const ValueKey('button1'),
                   onPressed: () {
-                    count1 = 1;
+                    button1Pressed = true;
                   },
                   iconData: Icons.abc,
                 ),
                 CustomAppBarButton(
                   key: const ValueKey('button2'),
                   onPressed: () {
-                    count2 = 1;
+                    button2Pressed = true;
                   },
                   icon: CustomIcon.trash(),
                 ),
@@ -67,11 +67,11 @@ void main() {
           (helper) async {
             await helper.tapWithValueKey('button1');
 
-            expect(count1, 1);
+            assert(button1Pressed);
 
             await helper.tapWithValueKey('button2');
 
-            expect(count2, 1);
+            assert(button2Pressed);
           },
         )(widgetTester);
       },
