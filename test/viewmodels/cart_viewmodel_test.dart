@@ -1,4 +1,5 @@
 import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/cart/cart_viewmodel.dart';
@@ -37,29 +38,6 @@ void main() {
             await Future.delayed(const Duration(seconds: 1));
             return SuccessApiResponse(data: MockData.cartEntries);
           });
-
-          when(cartService.entries).thenReturn(MockData.cartEntries);
-
-          when(cartService.count).thenReturn(MockData.cartCount);
-
-          when(cartService.empty()).thenAnswer(
-            (_) async {
-              await Future.delayed(const Duration(seconds: 1));
-              return const SuccessApiResponse();
-            },
-          );
-
-          when(cartService.addProduct(MockData.cartEntry1.productId))
-              .thenAnswer((_) async {
-            await Future.delayed(const Duration(seconds: 1));
-            return const SuccessApiResponse();
-          });
-
-          when(cartService.removeProduct(MockData.cartEntry1.productId))
-              .thenAnswer((_) async {
-            await Future.delayed(const Duration(seconds: 1));
-            return const SuccessApiResponse();
-          });
         },
       ),
     );
@@ -79,11 +57,26 @@ void main() {
 
       await wait;
 
-      expect(viewModel.total, MockData.cartTotal);
       expect(viewModel.products, MockData.cartProducts);
     });
 
+    test('should return total', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.entries).thenReturn(MockData.cartEntries);
+
+      final viewModel = CartViewModel();
+
+      await viewModel.init();
+
+      expect(viewModel.total, MockData.cartTotal);
+    });
+
     test('should return product count', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.entries).thenReturn(MockData.cartEntries);
+
       final viewModel = CartViewModel();
 
       await viewModel.init();
@@ -95,6 +88,15 @@ void main() {
     });
 
     test('should empty cart', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.empty()).thenAnswer(
+        (_) async {
+          await Future.delayed(const Duration(seconds: 1));
+          return const SuccessApiResponse();
+        },
+      );
+
       final viewModel = CartViewModel();
 
       await viewModel.init();
@@ -111,6 +113,14 @@ void main() {
     });
 
     test('should add product', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.addProduct(MockData.cartEntry1.productId))
+          .thenAnswer((_) async {
+        await Future.delayed(const Duration(seconds: 1));
+        return const SuccessApiResponse();
+      });
+
       final viewModel = CartViewModel();
 
       await viewModel.init();
@@ -127,6 +137,14 @@ void main() {
     });
 
     test('should remove product', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.removeProduct(MockData.cartEntry1.productId))
+          .thenAnswer((_) async {
+        await Future.delayed(const Duration(seconds: 1));
+        return const SuccessApiResponse();
+      });
+
       final viewModel = CartViewModel();
 
       await viewModel.init();

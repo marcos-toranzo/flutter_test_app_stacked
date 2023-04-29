@@ -16,23 +16,12 @@ class CartViewModel extends ReactiveViewModel {
   final _productService = locator<ProductService>();
   final _navigationService = locator<NavigationService>();
 
-  Map<int, CartEntry> get _productIdCartEntryMap {
-    final Map<int, CartEntry> result = {};
-
-    for (var cartEntry in _cartService.entries) {
-      result[cartEntry.productId] = cartEntry;
-    }
-
-    return result;
-  }
-
   List<Product>? _products;
   List<Product>? get products => _products != null ? [..._products!] : null;
 
   double get total =>
       products?.reduceAndCompute(
-          (acc, product) =>
-              acc! + product.price * _productIdCartEntryMap[product.id]!.count,
+          (acc, product) => acc! + product.price * getProductCount(product.id),
           0.0) ??
       0;
 
@@ -75,8 +64,9 @@ class CartViewModel extends ReactiveViewModel {
     return response.data;
   }
 
-  int getProductCount(int productId) =>
-      _productIdCartEntryMap[productId]?.count ?? 0;
+  int getProductCount(int productId) => _cartService.entries
+      .firstWhere((entry) => entry.productId == productId)
+      .count;
 
   Future<bool> onEmptyCart() async {
     final result = await runBusyFuture(

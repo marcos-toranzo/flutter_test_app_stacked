@@ -1,3 +1,4 @@
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_viewmodel.dart';
@@ -36,13 +37,6 @@ void main() {
             return const SuccessApiResponse(data: MockData.product1);
           });
         },
-        onCartServiceRegistered: (cartService) {
-          when(cartService.addProduct(MockData.cartEntry1.productId))
-              .thenAnswer((_) async {
-            await Future.delayed(const Duration(seconds: 1));
-            return const SuccessApiResponse();
-          });
-        },
       ),
     );
 
@@ -63,6 +57,14 @@ void main() {
     });
 
     test('should add to cart', () async {
+      final cartService = locator<CartService>();
+
+      when(cartService.addProduct(MockData.cartEntry1.productId))
+          .thenAnswer((_) async {
+        await Future.delayed(const Duration(seconds: 1));
+        return const SuccessApiResponse();
+      });
+
       final viewModel = ProductViewModel(MockData.product1.id);
 
       await viewModel.init();
