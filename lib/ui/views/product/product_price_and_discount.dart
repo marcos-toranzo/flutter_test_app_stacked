@@ -21,6 +21,7 @@ class ProductPriceAndDiscount extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
+          key: const ValueKey('productPriceAndDiscountPrice'),
           text: TextSpan(
             children: [
               TextSpan(
@@ -49,6 +50,7 @@ class ProductPriceAndDiscount extends StatelessWidget {
             children: [
               const SizedBox(width: 30),
               Column(
+                key: const ValueKey('productPriceAndDiscountDiscountPerc'),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
@@ -63,10 +65,11 @@ class ProductPriceAndDiscount extends StatelessWidget {
               ),
               const SizedBox(width: 20),
               Column(
+                key: const ValueKey('productPriceAndDiscountDiscount'),
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'PVPR',
+                    'MSRP',
                     style: TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   Text(

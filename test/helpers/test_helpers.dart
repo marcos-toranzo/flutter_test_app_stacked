@@ -30,100 +30,17 @@ import 'test_helpers.mocks.dart';
   MockSpec<sqflite.Database>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
-void registerServices() {
-  getAndRegisterNavigationService();
-  getAndRegisterBottomSheetService();
-  getAndRegisterDialogService();
-  getAndRegisterProductService();
-  getAndRegisterNetworkService();
-  getAndRegisterCartService();
-  getAndRegisterDatabaseService();
-// @stacked-mock-register
-}
-
-MockNavigationService getAndRegisterNavigationService() {
-  _removeRegistrationIfExists<NavigationService>();
-  final service = MockNavigationService();
-  locator.registerSingleton<NavigationService>(service);
-  return service;
-}
-
-MockBottomSheetService getAndRegisterBottomSheetService<T>({
-  SheetResponse<T>? showCustomSheetResponse,
-}) {
-  _removeRegistrationIfExists<BottomSheetService>();
-  final service = MockBottomSheetService();
-
-  when(service.showCustomSheet<T, T>(
-    enableDrag: anyNamed('enableDrag'),
-    enterBottomSheetDuration: anyNamed('enterBottomSheetDuration'),
-    exitBottomSheetDuration: anyNamed('exitBottomSheetDuration'),
-    ignoreSafeArea: anyNamed('ignoreSafeArea'),
-    isScrollControlled: anyNamed('isScrollControlled'),
-    barrierDismissible: anyNamed('barrierDismissible'),
-    additionalButtonTitle: anyNamed('additionalButtonTitle'),
-    variant: anyNamed('variant'),
-    title: anyNamed('title'),
-    hasImage: anyNamed('hasImage'),
-    imageUrl: anyNamed('imageUrl'),
-    showIconInMainButton: anyNamed('showIconInMainButton'),
-    mainButtonTitle: anyNamed('mainButtonTitle'),
-    showIconInSecondaryButton: anyNamed('showIconInSecondaryButton'),
-    secondaryButtonTitle: anyNamed('secondaryButtonTitle'),
-    showIconInAdditionalButton: anyNamed('showIconInAdditionalButton'),
-    takesInput: anyNamed('takesInput'),
-    barrierColor: anyNamed('barrierColor'),
-    barrierLabel: anyNamed('barrierLabel'),
-    customData: anyNamed('customData'),
-    data: anyNamed('data'),
-    description: anyNamed('description'),
-  )).thenAnswer((realInvocation) =>
-      Future.value(showCustomSheetResponse ?? SheetResponse<T>()));
-
-  locator.registerSingleton<BottomSheetService>(service);
-  return service;
-}
-
-MockDialogService getAndRegisterDialogService() {
-  _removeRegistrationIfExists<DialogService>();
-  final service = MockDialogService();
-  locator.registerSingleton<DialogService>(service);
-  return service;
-}
-
-MockProductService getAndRegisterProductService() {
-  _removeRegistrationIfExists<ProductService>();
-  final service = MockProductService();
-  locator.registerSingleton<ProductService>(service);
-  return service;
-}
-
-MockNetworkService getAndRegisterNetworkService() {
-  _removeRegistrationIfExists<NetworkService>();
-  final service = MockNetworkService();
-  locator.registerSingleton<NetworkService>(service);
-  return service;
-}
-
-MockCartService getAndRegisterCartService() {
-  _removeRegistrationIfExists<CartService>();
-  final service = MockCartService();
-  locator.registerSingleton<CartService>(service);
-  return service;
-}
-
-MockDatabaseService getAndRegisterDatabaseService() {
-  _removeRegistrationIfExists<DatabaseService>();
-  final service = MockDatabaseService();
-  locator.registerSingleton<DatabaseService>(service);
-  return service;
-}
-// @stacked-mock-create
-
-void _removeRegistrationIfExists<T extends Object>() {
+void _registerService<T extends Object>(
+  T service,
+  void Function(T)? onRegistered,
+) {
   if (locator.isRegistered<T>()) {
     locator.unregister<T>();
   }
+
+  locator.registerSingleton<T>(service);
+
+  onRegistered?.call(service);
 }
 
 Future<void> Function(TestHelper helper)? _setUpFn;
@@ -138,31 +55,38 @@ Future<void> Function(WidgetTester) testWidget(
   Widget Function(BuildContext)? scaffoldBody,
   bool wait = true,
   bool settle = true,
-  bool mockNetworkImage = true,
+  bool mockNetworkImage = false,
 }) {
   return (tester) async {
-    await setUp?.call();
+    Future<void> f() async {
+      await setUp?.call();
 
-    final helper = TestHelper(tester);
+      final helper = TestHelper(tester);
 
-    await helper.pumpApp(
-      InitialTestScreen(
-        screen: screen ?? _setUpScreen,
-        scaffoldBody: scaffoldBody ?? _setUpScaffoldBody,
-      ),
-      wait: wait,
-      settle: settle,
-      mockNetworkImage: mockNetworkImage,
-    );
+      await helper.pumpApp(
+        InitialTestScreen(
+          screen: screen ?? _setUpScreen,
+          scaffoldBody: scaffoldBody ?? _setUpScaffoldBody,
+        ),
+        wait: wait,
+        settle: settle,
+      );
 
-    if (_setUpFn != null) {
-      await _setUpFn!(helper);
+      if (_setUpFn != null) {
+        await _setUpFn!(helper);
+      }
+
+      await callback(helper);
+
+      if (_tearDownFn != null) {
+        await _tearDownFn!(helper);
+      }
     }
 
-    await callback(helper);
-
-    if (_tearDownFn != null) {
-      await _tearDownFn!(helper);
+    if (mockNetworkImage) {
+      await mockNetworkImagesFor(() => f());
+    } else {
+      await f();
     }
   };
 }
@@ -203,25 +127,21 @@ class TestHelper {
     void Function(CartService cartService)? onCartServiceRegistered,
     SheetResponse<T>? showCustomSheetResponse,
   }) async {
-    _removeRegistrationIfExists<NetworkService>();
-    final networkService =
-        mockNetworkService ? MockNetworkService() : NetworkService();
-    locator.registerSingleton<NetworkService>(networkService);
-    onNetworkServiceRegistered?.call(networkService);
+    _registerService<NetworkService>(
+      mockNetworkService ? MockNetworkService() : NetworkService(),
+      onNetworkServiceRegistered,
+    );
 
-    _removeRegistrationIfExists<DatabaseService>();
-    final databaseService =
-        mockDatabaseService ? MockDatabaseService() : DatabaseService();
-    locator.registerSingleton<DatabaseService>(databaseService);
-    onDatabaseServiceRegistered?.call(databaseService);
+    _registerService<DatabaseService>(
+      mockDatabaseService ? MockDatabaseService() : DatabaseService(),
+      onDatabaseServiceRegistered,
+    );
 
-    _removeRegistrationIfExists<NavigationService>();
-    final navigationService =
-        mockNavigationService ? MockNavigationService() : NavigationService();
-    locator.registerSingleton<NavigationService>(navigationService);
-    onNavigationServiceRegistered?.call(navigationService);
+    _registerService<NavigationService>(
+      mockNavigationService ? MockNavigationService() : NavigationService(),
+      onNavigationServiceRegistered,
+    );
 
-    _removeRegistrationIfExists<BottomSheetService>();
     late final BottomSheetService bottomSheetService;
 
     if (mockBottomSheetService) {
@@ -255,25 +175,26 @@ class TestHelper {
     } else {
       bottomSheetService = BottomSheetService();
     }
-    locator.registerSingleton<BottomSheetService>(bottomSheetService);
-    onBottomSheetServiceRegistered?.call(bottomSheetService);
 
-    _removeRegistrationIfExists<DialogService>();
-    final dialogService =
-        mockDialogService ? MockDialogService() : DialogService();
-    locator.registerSingleton<DialogService>(dialogService);
-    onDialogServiceRegistered?.call(dialogService);
+    _registerService<BottomSheetService>(
+      bottomSheetService,
+      onBottomSheetServiceRegistered,
+    );
 
-    _removeRegistrationIfExists<ProductService>();
-    final productService =
-        mockProductService ? MockProductService() : ProductService();
-    locator.registerSingleton<ProductService>(productService);
-    onProductServiceRegistered?.call(productService);
+    _registerService<DialogService>(
+      mockDialogService ? MockDialogService() : DialogService(),
+      onDialogServiceRegistered,
+    );
 
-    _removeRegistrationIfExists<CartService>();
-    final cartService = mockCartService ? MockCartService() : CartService();
-    locator.registerSingleton<CartService>(cartService);
-    onCartServiceRegistered?.call(cartService);
+    _registerService<ProductService>(
+      mockProductService ? MockProductService() : ProductService(),
+      onProductServiceRegistered,
+    );
+
+    _registerService<CartService>(
+      mockCartService ? MockCartService() : CartService(),
+      onCartServiceRegistered,
+    );
   }
 
   T widgetByType<T extends Widget>({
@@ -518,14 +439,8 @@ class TestHelper {
     Widget child, {
     bool wait = true,
     bool settle = true,
-    bool mockNetworkImage = true,
   }) async {
-    if (mockNetworkImage) {
-      await mockNetworkImagesFor(
-          () => tester.pumpWidget(MockFlutterTestStackedApp(child: child)));
-    } else {
-      await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
-    }
+    await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
 
     if (wait) {
       await this.wait(seconds: 20);

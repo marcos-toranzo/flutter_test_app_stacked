@@ -13,11 +13,12 @@ class ProductImagesCarousel extends StatefulWidget {
   });
 
   @override
-  State<ProductImagesCarousel> createState() => _ProductImagesCarouselState();
+  State<ProductImagesCarousel> createState() => ProductImagesCarouselState();
 }
 
-class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
-  int _current = 0;
+@visibleForTesting
+class ProductImagesCarouselState extends State<ProductImagesCarousel> {
+  int current = 0;
   final _controller = CarouselController();
 
   @override
@@ -48,9 +49,9 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
             enableInfiniteScroll: widget.images.length > 1,
             enlargeCenterPage: true,
             aspectRatio: 2.0,
-            onPageChanged: (index, reason) {
+            onPageChanged: (index, _) {
               setState(() {
-                _current = index;
+                current = index;
               });
             },
           ),
@@ -59,7 +60,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: widget.images.asMap().entries.mapList((entry) {
-            final selected = _current == entry.key;
+            final selected = current == entry.key;
 
             return GestureDetector(
               onTap: () => _controller.animateToPage(entry.key),
