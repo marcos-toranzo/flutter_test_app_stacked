@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/app/app.router.dart';
-import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
-import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/utils/formatting.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';

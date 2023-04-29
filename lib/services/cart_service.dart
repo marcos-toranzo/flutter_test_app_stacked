@@ -1,6 +1,6 @@
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
-import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
-import 'package:flutter_app_test_stacked/app/utils/types.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/utils/types.dart';
 import 'package:flutter_app_test_stacked/models/cart_entry.dart';
 import 'package:flutter_app_test_stacked/models/database_model.dart';
 import 'package:flutter_app_test_stacked/services/database_service.dart';

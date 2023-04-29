@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/models/cart_entry.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 

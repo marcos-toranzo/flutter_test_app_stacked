@@ -1,4 +1,4 @@
-import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
+import 'package:flutter_app_test_stacked/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter_app_test_stacked/app/utils/types.dart';
+import 'package:flutter_app_test_stacked/utils/types.dart';
 
 abstract class DatabaseModel {
   static const String columnId = 'id';

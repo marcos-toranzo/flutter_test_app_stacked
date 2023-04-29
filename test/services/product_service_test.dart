@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_test/flutter_test.dart';

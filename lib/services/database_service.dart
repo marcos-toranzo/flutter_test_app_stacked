@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:flutter_app_test_stacked/app/utils/types.dart';
+import 'package:flutter_app_test_stacked/utils/types.dart';
 import 'package:flutter_app_test_stacked/models/cart_entry.dart';
 import 'package:flutter_app_test_stacked/models/database_model.dart';
 

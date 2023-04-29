@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test_stacked/app/utils/formatting.dart';
+import 'package:flutter_app_test_stacked/utils/formatting.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 

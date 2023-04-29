@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
-import 'package:flutter_app_test_stacked/app/utils/iterable_utils.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/models/product.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 
