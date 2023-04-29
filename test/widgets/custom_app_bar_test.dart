@@ -10,7 +10,7 @@ void main() {
     testWidgets(
       'should display title and back button',
       testWidget(
-        screen: () => Scaffold(
+        screenBuilder: (_) => Scaffold(
           appBar: CustomAppBar(titleText: 'title'),
         ),
         (helper) async {
@@ -23,7 +23,7 @@ void main() {
     testWidgets(
       'should display title and subtitle',
       testWidget(
-        screen: () => Scaffold(
+        screenBuilder: (_) => Scaffold(
           appBar: CustomAppBar(
             titleText: 'title',
             subtitleText: 'subtitle',
@@ -43,7 +43,7 @@ void main() {
         int count2 = 0;
 
         await testWidget(
-          screen: () => Scaffold(
+          screenBuilder: (_) => Scaffold(
             appBar: CustomAppBar(
               titleText: 'title',
               buttons: [

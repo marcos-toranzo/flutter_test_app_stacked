@@ -1,9 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
+import 'package:flutter_app_test_stacked/ui/dialogs/info_alert/info_alert_dialog.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_header.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_images_carousel.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_price_and_discount.dart';
@@ -25,7 +28,7 @@ void main() {
       testWidgets(
         'should display rating',
         testWidget(
-          scaffoldBody: (_) => const ProductRating(
+          scaffoldBodyBuilder: (_) => const ProductRating(
             rating: 3.5,
           ),
           (helper) async {
@@ -46,7 +49,7 @@ void main() {
           const product = MockData.product1;
 
           await testWidget(
-            scaffoldBody: (_) => ProductHeader(
+            scaffoldBodyBuilder: (_) => ProductHeader(
               brand: product.brand,
               description: product.description,
               rating: product.rating,
@@ -72,7 +75,7 @@ void main() {
           final images = MockData.product1.images;
 
           await testWidget(
-            scaffoldBody: (_) => ProductImagesCarousel(
+            scaffoldBodyBuilder: (_) => ProductImagesCarousel(
               images: images,
             ),
             mockNetworkImage: true,
@@ -94,7 +97,7 @@ void main() {
           final key = GlobalKey<ProductImagesCarouselState>();
 
           await testWidget(
-            scaffoldBody: (_) => ProductImagesCarousel(
+            scaffoldBodyBuilder: (_) => ProductImagesCarousel(
               key: key,
               images: images,
             ),
@@ -122,7 +125,7 @@ void main() {
       testWidgets(
         'should display In stock',
         testWidget(
-          scaffoldBody: (_) => const ProductStockStatus(stock: 20),
+          scaffoldBodyBuilder: (_) => const ProductStockStatus(stock: 20),
           (helper) async {
             final text = helper.text('In stock');
             expect(text.style!.color, Colors.green);
@@ -133,7 +136,7 @@ void main() {
       testWidgets(
         'should display Few in stock',
         testWidget(
-          scaffoldBody: (_) => const ProductStockStatus(stock: 9),
+          scaffoldBodyBuilder: (_) => const ProductStockStatus(stock: 9),
           (helper) async {
             final text = helper.text('Few in stock');
             expect(text.style!.color, kcOrange);
@@ -144,7 +147,7 @@ void main() {
       testWidgets(
         'should display Not in stock',
         testWidget(
-          scaffoldBody: (_) => const ProductStockStatus(stock: 0),
+          scaffoldBodyBuilder: (_) => const ProductStockStatus(stock: 0),
           (helper) async {
             final text = helper.text('Not in stock');
             expect(text.style!.color, Colors.red);
@@ -161,7 +164,7 @@ void main() {
           const discount = 12.34;
 
           await testWidget(
-            scaffoldBody: (_) => const ProductPriceAndDiscount(
+            scaffoldBodyBuilder: (_) => const ProductPriceAndDiscount(
               price: price,
               discount: discount,
             ),
@@ -198,14 +201,14 @@ void main() {
     group('View -', () {
       setUpAll(
         () => TestHelper.setUp(
-          screen: () => ProductView(productId: MockData.product1.id),
+          screen: (_) => ProductView(productId: MockData.product1.id),
         ),
       );
 
       tearDownAll(() => TestHelper.setUp());
 
       setUp(
-        () => TestHelper.initApp(
+        () => TestHelper.setUpServices(
           mockProductService: true,
           mockCartService: true,
           onProductServiceRegistered: (productService) {
@@ -316,6 +319,122 @@ void main() {
           },
         ),
       );
+
+      testWidgets(
+        'should refresh',
+        testWidget(
+          mockNetworkImage: true,
+          (helper) async {
+            final productService = locator<ProductService>();
+            const product = MockData.product2;
+
+            when(
+              productService.getProduct(
+                MockData.product1.id,
+                select: [
+                  ProductField.id,
+                  ProductField.title,
+                  ProductField.description,
+                  ProductField.price,
+                  ProductField.discountPercentage,
+                  ProductField.rating,
+                  ProductField.stock,
+                  ProductField.brand,
+                  ProductField.category,
+                  ProductField.images,
+                ],
+              ),
+            ).thenAnswer((_) async => const SuccessApiResponse(data: product));
+
+            await helper.tapWithValueKey('productViewRefreshButton');
+
+            final ProductHeader productHeader = helper.widgetByType();
+
+            expect(productHeader.brand, product.brand);
+            expect(productHeader.description, product.description);
+            expect(productHeader.rating, product.rating);
+            expect(productHeader.title, product.title);
+
+            final ProductImagesCarousel carousel = helper.widgetByType();
+
+            expect(carousel.images, product.images);
+
+            final ProductStockStatus stockStatus = helper.widgetByType(
+              skipOffstage: false,
+            );
+
+            expect(stockStatus.stock, product.stock);
+
+            final ProductPriceAndDiscount priceAndDiscount =
+                helper.widgetByType(
+              skipOffstage: false,
+            );
+
+            expect(priceAndDiscount.discount, product.discountPercentage);
+            expect(priceAndDiscount.price, product.price);
+
+            helper.widgetByType<CustomFab>();
+          },
+        ),
+      );
+
+      group('Add to cart -', () {
+        testWidgets(
+          'should show success dialog',
+          testWidget(
+            setUp: () {
+              setupDialogUi();
+            },
+            mockNetworkImage: true,
+            (helper) async {
+              final cartService = locator<CartService>();
+
+              when(
+                cartService.addProduct(MockData.product1.id),
+              ).thenAnswer((_) async => const SuccessApiResponse());
+
+              await helper.tap(CustomFab);
+
+              await helper.settle();
+
+              final InfoAlertDialog infoAlertDialog = helper.widgetByType();
+
+              expect(infoAlertDialog.request.title, 'Hooray!');
+              expect(infoAlertDialog.request.description,
+                  'Product added to cart.');
+              expect(infoAlertDialog.request.data, true);
+            },
+          ),
+        );
+
+        testWidgets(
+          'should show error dialog',
+          testWidget(
+            setUp: () {
+              setupDialogUi();
+            },
+            mockNetworkImage: true,
+            (helper) async {
+              final cartService = locator<CartService>();
+
+              when(
+                cartService.addProduct(MockData.product1.id),
+              ).thenAnswer((_) async => const ErrorApiResponse());
+
+              await helper.tap(CustomFab);
+
+              await helper.settle();
+
+              final InfoAlertDialog infoAlertDialog = helper.widgetByType();
+
+              expect(infoAlertDialog.request.title, 'Oops!');
+              expect(infoAlertDialog.request.description,
+                  'Something went wrong trying to add product to cart.');
+              expect(infoAlertDialog.request.data, false);
+            },
+          ),
+        );
+      });
     });
   });
 }

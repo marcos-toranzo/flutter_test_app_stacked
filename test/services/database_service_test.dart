@@ -14,7 +14,7 @@ void main() {
   database = db;
 
   group('DatabaseService Tests -', () {
-    setUp(() => TestHelper.initApp());
+    setUp(() => TestHelper.setUpServices());
 
     tearDown(() => locator.reset());
 

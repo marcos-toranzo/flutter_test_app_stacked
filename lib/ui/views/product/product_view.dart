@@ -36,6 +36,7 @@ class ProductView extends StackedView<ProductViewModel> {
         titleText: 'Product',
         buttons: [
           CustomAppBarButton(
+            key: const ValueKey('productViewRefreshButton'),
             iconData: Icons.refresh,
             onPressed: viewModel.onRefresh,
           ),

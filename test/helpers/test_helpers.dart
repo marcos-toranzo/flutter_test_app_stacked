@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/app/app.bottomsheets.dart';
+import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
+import 'package:flutter_app_test_stacked/app/app.router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -30,32 +33,21 @@ import 'test_helpers.mocks.dart';
   MockSpec<sqflite.Database>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
-void _registerService<T extends Object>(
-  T service,
-  void Function(T)? onRegistered,
-) {
-  if (locator.isRegistered<T>()) {
-    locator.unregister<T>();
-  }
-
-  locator.registerSingleton<T>(service);
-
-  onRegistered?.call(service);
-}
-
 Future<void> Function(TestHelper helper)? _setUpFn;
-Widget Function()? _setUpScreen;
-Widget Function(BuildContext)? _setUpScaffoldBody;
 Future<void> Function(TestHelper helper)? _tearDownFn;
+WidgetBuilder? _setUpScreenBuilder;
+WidgetBuilder? _setUpScaffoldBodyBuilder;
 
 Future<void> Function(WidgetTester) testWidget(
   Future<void> Function(TestHelper helper) callback, {
   FutureOr<void> Function()? setUp,
-  Widget Function()? screen,
-  Widget Function(BuildContext)? scaffoldBody,
+  WidgetBuilder? screenBuilder,
+  WidgetBuilder? scaffoldBodyBuilder,
   bool wait = true,
   bool settle = true,
   bool mockNetworkImage = false,
+  bool setUpDialogUi = false,
+  bool setUpBottomSheetUi = false,
 }) {
   return (tester) async {
     Future<void> f() async {
@@ -63,10 +55,17 @@ Future<void> Function(WidgetTester) testWidget(
 
       final helper = TestHelper(tester);
 
+      if (setUpDialogUi) {
+        setupDialogUi();
+      }
+      if (setUpBottomSheetUi) {
+        setupBottomSheetUi();
+      }
+
       await helper.pumpApp(
         InitialTestScreen(
-          screen: screen ?? _setUpScreen,
-          scaffoldBody: scaffoldBody ?? _setUpScaffoldBody,
+          screenBuilder: screenBuilder ?? _setUpScreenBuilder,
+          scaffoldBodyBuilder: scaffoldBodyBuilder ?? _setUpScaffoldBodyBuilder,
         ),
         wait: wait,
         settle: settle,
@@ -99,16 +98,16 @@ class TestHelper {
   static void setUp({
     Future<void> Function(TestHelper helper)? onInit,
     Future<void> Function(TestHelper helper)? onTearDown,
-    Widget Function()? screen,
-    Widget Function(BuildContext)? scaffoldBody,
+    WidgetBuilder? screen,
+    WidgetBuilder? scaffoldBody,
   }) {
     _setUpFn = onInit;
     _tearDownFn = onTearDown;
-    _setUpScreen = screen;
-    _setUpScaffoldBody = scaffoldBody;
+    _setUpScreenBuilder = screen;
+    _setUpScaffoldBodyBuilder = scaffoldBody;
   }
 
-  static Future<void> initApp<T extends Object>({
+  static Future<void> setUpServices<T extends Object>({
     bool mockNetworkService = false,
     bool mockDatabaseService = false,
     bool mockNavigationService = false,
@@ -195,6 +194,60 @@ class TestHelper {
       mockCartService ? MockCartService() : CartService(),
       onCartServiceRegistered,
     );
+  }
+
+  static void _registerService<T extends Object>(
+    T service,
+    void Function(T)? onRegistered,
+  ) {
+    if (locator.isRegistered<T>()) {
+      locator.unregister<T>();
+    }
+
+    locator.registerSingleton<T>(service);
+
+    onRegistered?.call(service);
+  }
+
+  Future<void> pumpApp(
+    Widget child, {
+    bool wait = true,
+    bool settle = true,
+  }) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        title: 'Flutter Stacked Test',
+        home: child,
+        onGenerateRoute: StackedRouter().onGenerateRoute,
+        navigatorKey: StackedService.navigatorKey,
+        navigatorObservers: [
+          StackedService.routeObserver,
+        ],
+      ),
+    );
+
+    if (wait) {
+      await this.wait(seconds: 20);
+    }
+
+    if (settle) {
+      await this.settle();
+    }
+  }
+
+  Future<void> settle() async {
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> wait({
+    int days = 0,
+    int hours = 0,
+    int minutes = 0,
+    int seconds = 0,
+    int milliseconds = 0,
+    int microseconds = 0,
+  }) async {
+    await tester.pump(Duration(seconds: seconds));
   }
 
   T widgetByType<T extends Widget>({
@@ -435,37 +488,6 @@ class TestHelper {
     return tester.state(find.byType(Navigator));
   }
 
-  Future<void> pumpApp(
-    Widget child, {
-    bool wait = true,
-    bool settle = true,
-  }) async {
-    await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
-
-    if (wait) {
-      await this.wait(seconds: 20);
-    }
-
-    if (settle) {
-      await this.settle();
-    }
-  }
-
-  Future<void> settle() async {
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> wait({
-    int days = 0,
-    int hours = 0,
-    int minutes = 0,
-    int seconds = 0,
-    int milliseconds = 0,
-    int microseconds = 0,
-  }) async {
-    await tester.pump(Duration(seconds: seconds));
-  }
-
   Future<void> _tap(
     Finder finder, {
     bool warnIfMissed = true,
@@ -525,33 +547,22 @@ class TestHelper {
   }
 }
 
-class MockFlutterTestStackedApp extends StatelessWidget {
-  final Widget child;
-
-  const MockFlutterTestStackedApp({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Stacked Test',
-      home: child,
-    );
-  }
-}
-
 class InitialTestScreen extends StatelessWidget {
-  final Widget Function()? screen;
-  final Widget Function(BuildContext)? scaffoldBody;
+  final WidgetBuilder? screenBuilder;
+  final WidgetBuilder? scaffoldBodyBuilder;
 
-  const InitialTestScreen({super.key, this.screen, this.scaffoldBody})
-      : assert(screen != null || scaffoldBody != null);
+  const InitialTestScreen({
+    super.key,
+    this.screenBuilder,
+    this.scaffoldBodyBuilder,
+  })  : assert(screenBuilder != null || scaffoldBodyBuilder != null,
+            'Must provide at leas one builder'),
+        assert(screenBuilder == null || scaffoldBodyBuilder == null,
+            'Only one builder must be provided');
 
   @override
   Widget build(BuildContext context) {
-    return screen != null
-        ? screen!()
-        : Scaffold(
-            body: scaffoldBody!(context),
-          );
+    return screenBuilder?.call(context) ??
+        Scaffold(body: Builder(builder: scaffoldBodyBuilder!));
   }
 }

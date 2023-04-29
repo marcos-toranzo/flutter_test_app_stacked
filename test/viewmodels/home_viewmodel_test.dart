@@ -13,7 +13,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('HomeViewmodel Tests -', () {
     setUp(
-      () => TestHelper.initApp(
+      () => TestHelper.setUpServices(
         mockProductService: true,
         mockCartService: true,
         onProductServiceRegistered: (productService) {

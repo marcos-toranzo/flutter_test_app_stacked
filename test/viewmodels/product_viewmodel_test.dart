@@ -12,7 +12,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('ProductViewModel Tests -', () {
     setUp(
-      () => TestHelper.initApp(
+      () => TestHelper.setUpServices(
         mockProductService: true,
         mockCartService: true,
         onProductServiceRegistered: (productService) {

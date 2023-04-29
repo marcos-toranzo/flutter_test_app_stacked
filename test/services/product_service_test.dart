@@ -13,7 +13,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('ProductService Tests -', () {
     setUp(() {
-      TestHelper.initApp(
+      TestHelper.setUpServices(
         mockNetworkService: true,
         onNetworkServiceRegistered: (networkService) {
           when(networkService.get('products/categories')).thenAnswer(

@@ -16,7 +16,7 @@ void main() {
         const product = MockData.product1;
 
         await testWidget(
-          scaffoldBody: (_) => ProductItem(
+          scaffoldBodyBuilder: (_) => ProductItem(
             product: product,
             onTap: () {
               count = 1;
@@ -45,7 +45,7 @@ void main() {
     testWidgets(
       'should display item without discount',
       testWidget(
-        scaffoldBody: (_) => const ProductItem(
+        scaffoldBodyBuilder: (_) => const ProductItem(
           product: MockData.product1,
           showDiscount: false,
         ),
@@ -64,7 +64,7 @@ void main() {
     testWidgets(
       'should display trailing widget',
       testWidget(
-        scaffoldBody: (_) => const ProductItem(
+        scaffoldBodyBuilder: (_) => const ProductItem(
           product: MockData.product1,
           trailing: Icon(Icons.abc, key: ValueKey('value')),
         ),

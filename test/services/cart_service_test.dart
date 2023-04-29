@@ -13,7 +13,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('CartService Tests -', () {
     setUp(() {
-      TestHelper.initApp(
+      TestHelper.setUpServices(
         mockDatabaseService: true,
         onDatabaseServiceRegistered: (databaseService) {
           when(databaseService.get(tableName: CartEntry.tableName)).thenAnswer(

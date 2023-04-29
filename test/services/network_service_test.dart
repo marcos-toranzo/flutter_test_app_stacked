@@ -20,7 +20,7 @@ void main() {
   }
 
   group('NetworkService Tests -', () {
-    setUp(() => TestHelper.initApp());
+    setUp(() => TestHelper.setUpServices());
 
     tearDown(() => locator.reset());
 

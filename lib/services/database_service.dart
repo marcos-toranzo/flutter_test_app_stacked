@@ -38,12 +38,6 @@ class DatabaseService {
 
     final whereClausesParsed = parseWhereClauses(whereClauses);
 
-    if (whereClauses != null) {
-      for (var whereClause in whereClauses) {
-        if (whereClause is WhereInClause) {}
-      }
-    }
-
     return await database!.update(
       tableName,
       model.toMap(),
@@ -97,7 +91,8 @@ class DatabaseService {
     database = await openDatabase(
       join(await getDatabasesPath(), _databaseName),
       onCreate: (db, version) async {
-        await db.execute('''
+        await db.execute(
+            '''
             CREATE TABLE ${CartEntry.tableName}(
               ${DatabaseModel.columnId} integer PRIMARY KEY AUTOINCREMENT,
               ${CartEntry.columnProductId} integer NOT NULL UNIQUE,
