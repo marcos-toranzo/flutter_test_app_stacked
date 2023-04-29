@@ -130,23 +130,6 @@ Widget Function()? _setUpScreen;
 Widget Function(BuildContext)? _setUpScaffoldBody;
 Future<void> Function(TestHelper helper)? _tearDownFn;
 
-class InitialTestScreen extends StatelessWidget {
-  final Widget Function()? screen;
-  final Widget Function(BuildContext)? scaffoldBody;
-
-  const InitialTestScreen({super.key, this.screen, this.scaffoldBody})
-      : assert(screen != null || scaffoldBody != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return screen != null
-        ? screen!()
-        : Scaffold(
-            body: scaffoldBody!(context),
-          );
-  }
-}
-
 Future<void> Function(WidgetTester) testWidget(
   Future<void> Function(TestHelper helper) callback, {
   FutureOr<void> Function()? setUp,
@@ -626,13 +609,25 @@ class MockFlutterTestStackedApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Stacked',
-      theme: Theme.of(context).copyWith(
-        textTheme: Theme.of(context).textTheme.apply(
-              fontFamily: 'Mulish',
-            ),
-      ),
+      title: 'Flutter Stacked Test',
       home: child,
     );
+  }
+}
+
+class InitialTestScreen extends StatelessWidget {
+  final Widget Function()? screen;
+  final Widget Function(BuildContext)? scaffoldBody;
+
+  const InitialTestScreen({super.key, this.screen, this.scaffoldBody})
+      : assert(screen != null || scaffoldBody != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return screen != null
+        ? screen!()
+        : Scaffold(
+            body: scaffoldBody!(context),
+          );
   }
 }

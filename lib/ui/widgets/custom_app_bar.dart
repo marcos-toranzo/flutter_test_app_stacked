@@ -22,6 +22,7 @@ class CustomAppBar extends AppBar {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CustomAppBarButton(
+                  key: const ValueKey('customAppBarBackButton'),
                   icon: CustomIcon.back(),
                   onPressed: () {
                     locator<NavigationService>().back();
