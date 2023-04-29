@@ -6,14 +6,14 @@ import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 
 class ProductItem extends StatelessWidget {
   final Product product;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Widget? trailing;
   final bool showDiscount;
   final double horizontalPadding;
 
   const ProductItem({
     required this.product,
-    required this.onTap,
+    this.onTap,
     this.trailing,
     this.showDiscount = true,
     this.horizontalPadding = 25,

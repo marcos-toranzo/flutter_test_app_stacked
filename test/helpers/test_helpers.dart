@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_app_test_stacked/app/app.locator.dart';
+import 'package:network_image_mock/network_image_mock.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:stacked_services/stacked_services.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
@@ -137,6 +138,7 @@ Future<void> Function(WidgetTester) testWidget(
   Widget Function(BuildContext)? scaffoldBody,
   bool wait = true,
   bool settle = true,
+  bool mockNetworkImage = true,
 }) {
   return (tester) async {
     await setUp?.call();
@@ -150,6 +152,7 @@ Future<void> Function(WidgetTester) testWidget(
       ),
       wait: wait,
       settle: settle,
+      mockNetworkImage: mockNetworkImage,
     );
 
     if (_setUpFn != null) {
@@ -515,8 +518,14 @@ class TestHelper {
     Widget child, {
     bool wait = true,
     bool settle = true,
+    bool mockNetworkImage = true,
   }) async {
-    await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
+    if (mockNetworkImage) {
+      await mockNetworkImagesFor(
+          () => tester.pumpWidget(MockFlutterTestStackedApp(child: child)));
+    } else {
+      await tester.pumpWidget(MockFlutterTestStackedApp(child: child));
+    }
 
     if (wait) {
       await this.wait(seconds: 20);
