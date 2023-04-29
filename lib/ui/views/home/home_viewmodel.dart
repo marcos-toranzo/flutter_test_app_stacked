@@ -11,7 +11,6 @@ import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 const String fetchingCategories = 'fetchingCategories';
-const String gettingCartCount = 'gettingCartCount';
 const String allCategories = 'All';
 const int productsLimit = 10;
 
@@ -28,7 +27,7 @@ class HomeViewModel extends ReactiveViewModel {
   String _searchText = '';
 
   Future<bool> init() async {
-    final result = _fetchCategories();
+    final result = await _fetchCategories();
     rebuildUi();
 
     return result;
