@@ -13,7 +13,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('CartService Tests -', () {
     setUp(() {
-      TestHelper.setUpServices(
+      setUpServices(
         mockDatabaseService: true,
         onDatabaseServiceRegistered: (databaseService) {
           when(databaseService.get(tableName: CartEntry.tableName)).thenAnswer(
@@ -25,7 +25,7 @@ void main() {
       );
     });
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     group('Get entries -', () {
       test('should get entries', () async {

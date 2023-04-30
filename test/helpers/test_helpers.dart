@@ -33,17 +33,139 @@ import 'test_helpers.mocks.dart';
   MockSpec<sqflite.Database>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
-Future<void> Function(TestHelper helper)? _setUpFn;
-Future<void> Function(TestHelper helper)? _tearDownFn;
+Future<void> Function(TestHelper helper)? _onPumpApp;
+Future<void> Function(TestHelper helper)? _afterCallback;
 WidgetBuilder? _setUpScreenBuilder;
 WidgetBuilder? _setUpScaffoldBodyBuilder;
+
+void testWidgetSetUpAll({
+  Future<void> Function(TestHelper helper)? onPumpApp,
+  Future<void> Function(TestHelper helper)? afterCallback,
+  WidgetBuilder? screenBuilder,
+  WidgetBuilder? scaffoldBodyBuilder,
+}) {
+  _onPumpApp = onPumpApp;
+  _afterCallback = afterCallback;
+  _setUpScreenBuilder = screenBuilder;
+  _setUpScaffoldBodyBuilder = scaffoldBodyBuilder;
+}
+
+void testWidgetReset() {
+  testWidgetSetUpAll();
+}
+
+void setUpServices<T extends Object>({
+  bool mockNetworkService = false,
+  bool mockDatabaseService = false,
+  bool mockNavigationService = false,
+  bool mockBottomSheetService = false,
+  bool mockDialogService = false,
+  bool mockProductService = false,
+  bool mockCartService = false,
+  void Function(NetworkService networkService)? onNetworkServiceRegistered,
+  void Function(DatabaseService databaseService)? onDatabaseServiceRegistered,
+  void Function(NavigationService navigationService)?
+      onNavigationServiceRegistered,
+  void Function(BottomSheetService bottomSheetService)?
+      onBottomSheetServiceRegistered,
+  void Function(DialogService dialogService)? onDialogServiceRegistered,
+  void Function(ProductService productService)? onProductServiceRegistered,
+  void Function(CartService cartService)? onCartServiceRegistered,
+  SheetResponse<T>? showCustomSheetResponse,
+}) async {
+  _registerService<NetworkService>(
+    mockNetworkService ? MockNetworkService() : NetworkService(),
+    onNetworkServiceRegistered,
+  );
+
+  _registerService<DatabaseService>(
+    mockDatabaseService ? MockDatabaseService() : DatabaseService(),
+    onDatabaseServiceRegistered,
+  );
+
+  _registerService<NavigationService>(
+    mockNavigationService ? MockNavigationService() : NavigationService(),
+    onNavigationServiceRegistered,
+  );
+
+  late final BottomSheetService bottomSheetService;
+
+  if (mockBottomSheetService) {
+    bottomSheetService = MockBottomSheetService();
+
+    when((bottomSheetService as MockBottomSheetService).showCustomSheet<T, T>(
+      enableDrag: anyNamed('enableDrag'),
+      enterBottomSheetDuration: anyNamed('enterBottomSheetDuration'),
+      exitBottomSheetDuration: anyNamed('exitBottomSheetDuration'),
+      ignoreSafeArea: anyNamed('ignoreSafeArea'),
+      isScrollControlled: anyNamed('isScrollControlled'),
+      barrierDismissible: anyNamed('barrierDismissible'),
+      additionalButtonTitle: anyNamed('additionalButtonTitle'),
+      variant: anyNamed('variant'),
+      title: anyNamed('title'),
+      hasImage: anyNamed('hasImage'),
+      imageUrl: anyNamed('imageUrl'),
+      showIconInMainButton: anyNamed('showIconInMainButton'),
+      mainButtonTitle: anyNamed('mainButtonTitle'),
+      showIconInSecondaryButton: anyNamed('showIconInSecondaryButton'),
+      secondaryButtonTitle: anyNamed('secondaryButtonTitle'),
+      showIconInAdditionalButton: anyNamed('showIconInAdditionalButton'),
+      takesInput: anyNamed('takesInput'),
+      barrierColor: anyNamed('barrierColor'),
+      barrierLabel: anyNamed('barrierLabel'),
+      customData: anyNamed('customData'),
+      data: anyNamed('data'),
+      description: anyNamed('description'),
+    )).thenAnswer((realInvocation) =>
+        Future.value(showCustomSheetResponse ?? SheetResponse<T>()));
+  } else {
+    bottomSheetService = BottomSheetService();
+  }
+
+  _registerService<BottomSheetService>(
+    bottomSheetService,
+    onBottomSheetServiceRegistered,
+  );
+
+  _registerService<DialogService>(
+    mockDialogService ? MockDialogService() : DialogService(),
+    onDialogServiceRegistered,
+  );
+
+  _registerService<ProductService>(
+    mockProductService ? MockProductService() : ProductService(),
+    onProductServiceRegistered,
+  );
+
+  _registerService<CartService>(
+    mockCartService ? MockCartService() : CartService(),
+    onCartServiceRegistered,
+  );
+}
+
+Future<void> tearDownServices() async {
+  await locator.reset();
+}
+
+void _registerService<T extends Object>(
+  T service,
+  void Function(T)? onRegistered,
+) {
+  if (locator.isRegistered<T>()) {
+    locator.unregister<T>();
+  }
+
+  locator.registerSingleton<T>(service);
+
+  onRegistered?.call(service);
+}
 
 Future<void> Function(WidgetTester) testWidget(
   Future<void> Function(TestHelper helper) callback, {
   FutureOr<void> Function()? setUp,
   WidgetBuilder? screenBuilder,
   WidgetBuilder? scaffoldBodyBuilder,
-  bool wait = true,
+  Duration? wait = const Duration(seconds: 20),
   bool settle = true,
   bool mockNetworkImage = false,
   bool setUpDialogUi = false,
@@ -71,14 +193,14 @@ Future<void> Function(WidgetTester) testWidget(
         settle: settle,
       );
 
-      if (_setUpFn != null) {
-        await _setUpFn!(helper);
+      if (_onPumpApp != null) {
+        await _onPumpApp!(helper);
       }
 
       await callback(helper);
 
-      if (_tearDownFn != null) {
-        await _tearDownFn!(helper);
+      if (_afterCallback != null) {
+        await _afterCallback!(helper);
       }
     }
 
@@ -95,123 +217,9 @@ class TestHelper {
 
   const TestHelper(this.tester);
 
-  static void setUp({
-    Future<void> Function(TestHelper helper)? onInit,
-    Future<void> Function(TestHelper helper)? onTearDown,
-    WidgetBuilder? screen,
-    WidgetBuilder? scaffoldBody,
-  }) {
-    _setUpFn = onInit;
-    _tearDownFn = onTearDown;
-    _setUpScreenBuilder = screen;
-    _setUpScaffoldBodyBuilder = scaffoldBody;
-  }
-
-  static Future<void> setUpServices<T extends Object>({
-    bool mockNetworkService = false,
-    bool mockDatabaseService = false,
-    bool mockNavigationService = false,
-    bool mockBottomSheetService = false,
-    bool mockDialogService = false,
-    bool mockProductService = false,
-    bool mockCartService = false,
-    void Function(NetworkService networkService)? onNetworkServiceRegistered,
-    void Function(DatabaseService databaseService)? onDatabaseServiceRegistered,
-    void Function(NavigationService navigationService)?
-        onNavigationServiceRegistered,
-    void Function(BottomSheetService bottomSheetService)?
-        onBottomSheetServiceRegistered,
-    void Function(DialogService dialogService)? onDialogServiceRegistered,
-    void Function(ProductService productService)? onProductServiceRegistered,
-    void Function(CartService cartService)? onCartServiceRegistered,
-    SheetResponse<T>? showCustomSheetResponse,
-  }) async {
-    _registerService<NetworkService>(
-      mockNetworkService ? MockNetworkService() : NetworkService(),
-      onNetworkServiceRegistered,
-    );
-
-    _registerService<DatabaseService>(
-      mockDatabaseService ? MockDatabaseService() : DatabaseService(),
-      onDatabaseServiceRegistered,
-    );
-
-    _registerService<NavigationService>(
-      mockNavigationService ? MockNavigationService() : NavigationService(),
-      onNavigationServiceRegistered,
-    );
-
-    late final BottomSheetService bottomSheetService;
-
-    if (mockBottomSheetService) {
-      bottomSheetService = MockBottomSheetService();
-
-      when((bottomSheetService as MockBottomSheetService).showCustomSheet<T, T>(
-        enableDrag: anyNamed('enableDrag'),
-        enterBottomSheetDuration: anyNamed('enterBottomSheetDuration'),
-        exitBottomSheetDuration: anyNamed('exitBottomSheetDuration'),
-        ignoreSafeArea: anyNamed('ignoreSafeArea'),
-        isScrollControlled: anyNamed('isScrollControlled'),
-        barrierDismissible: anyNamed('barrierDismissible'),
-        additionalButtonTitle: anyNamed('additionalButtonTitle'),
-        variant: anyNamed('variant'),
-        title: anyNamed('title'),
-        hasImage: anyNamed('hasImage'),
-        imageUrl: anyNamed('imageUrl'),
-        showIconInMainButton: anyNamed('showIconInMainButton'),
-        mainButtonTitle: anyNamed('mainButtonTitle'),
-        showIconInSecondaryButton: anyNamed('showIconInSecondaryButton'),
-        secondaryButtonTitle: anyNamed('secondaryButtonTitle'),
-        showIconInAdditionalButton: anyNamed('showIconInAdditionalButton'),
-        takesInput: anyNamed('takesInput'),
-        barrierColor: anyNamed('barrierColor'),
-        barrierLabel: anyNamed('barrierLabel'),
-        customData: anyNamed('customData'),
-        data: anyNamed('data'),
-        description: anyNamed('description'),
-      )).thenAnswer((realInvocation) =>
-          Future.value(showCustomSheetResponse ?? SheetResponse<T>()));
-    } else {
-      bottomSheetService = BottomSheetService();
-    }
-
-    _registerService<BottomSheetService>(
-      bottomSheetService,
-      onBottomSheetServiceRegistered,
-    );
-
-    _registerService<DialogService>(
-      mockDialogService ? MockDialogService() : DialogService(),
-      onDialogServiceRegistered,
-    );
-
-    _registerService<ProductService>(
-      mockProductService ? MockProductService() : ProductService(),
-      onProductServiceRegistered,
-    );
-
-    _registerService<CartService>(
-      mockCartService ? MockCartService() : CartService(),
-      onCartServiceRegistered,
-    );
-  }
-
-  static void _registerService<T extends Object>(
-    T service,
-    void Function(T)? onRegistered,
-  ) {
-    if (locator.isRegistered<T>()) {
-      locator.unregister<T>();
-    }
-
-    locator.registerSingleton<T>(service);
-
-    onRegistered?.call(service);
-  }
-
   Future<void> pumpApp(
     Widget child, {
-    bool wait = true,
+    Duration? wait = const Duration(seconds: 20),
     bool settle = true,
   }) async {
     await tester.pumpWidget(
@@ -226,12 +234,12 @@ class TestHelper {
       ),
     );
 
-    if (wait) {
-      await this.wait(seconds: 20);
+    if (wait != null) {
+      await tester.pump(wait);
     }
 
     if (settle) {
-      await this.settle();
+      await tester.pumpAndSettle();
     }
   }
 
@@ -293,6 +301,23 @@ class TestHelper {
     return widgetByKey(ValueKey(value), skipOffstage: skipOffstage);
   }
 
+  Text text(
+    String text, {
+    bool skipOffstage = false,
+    void Function(Text textWidget)? expecting,
+  }) {
+    final textWidget = _getWidget<Text>(
+      _findWidget(
+        () => find.text(text, skipOffstage: skipOffstage),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(textWidget);
+
+    return textWidget;
+  }
+
   void noWidgetByType(Type type, {bool skipOffstage = true}) {
     _findWidgetByType(type, findsNothing, skipOffstage: skipOffstage);
   }
@@ -310,23 +335,6 @@ class TestHelper {
       () => find.text(text, skipOffstage: skipOffstage),
       findsNothing,
     );
-  }
-
-  Text text(
-    String text, {
-    bool skipOffstage = false,
-    void Function(Text textWidget)? expecting,
-  }) {
-    final textWidget = _getWidget<Text>(
-      _findWidget(
-        () => find.text(text, skipOffstage: skipOffstage),
-        findsOneWidget,
-      ),
-    );
-
-    expecting?.call(textWidget);
-
-    return textWidget;
   }
 
   T widgetWithText<T extends Widget>(

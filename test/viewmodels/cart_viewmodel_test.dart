@@ -12,8 +12,8 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('CartViewModel Tests -', () {
-    setUp(
-      () => TestHelper.setUpServices(
+    setUp(() {
+      setUpServices(
         mockProductService: true,
         mockCartService: true,
         mockNavigationService: true,
@@ -39,10 +39,10 @@ void main() {
             return SuccessApiResponse(data: MockData.cartEntries);
           });
         },
-      ),
-    );
+      );
+    });
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     test('should initialize', () async {
       final viewModel = CartViewModel();

@@ -20,9 +20,9 @@ void main() {
   }
 
   group('NetworkService Tests -', () {
-    setUp(() => TestHelper.setUpServices());
+    setUp(setUpServices);
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     group('GET -', () {
       test('should call correctly', () async {

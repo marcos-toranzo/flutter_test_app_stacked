@@ -14,9 +14,9 @@ void main() {
   database = db;
 
   group('DatabaseService Tests -', () {
-    setUp(() => TestHelper.setUpServices());
+    setUp(setUpServices);
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     group('WhereClause -', () {
       test('should parse WhereEqualClause correctly', () {

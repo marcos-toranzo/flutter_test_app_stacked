@@ -13,7 +13,7 @@ import '../helpers/test_helpers.dart';
 void main() {
   group('ProductService Tests -', () {
     setUp(() {
-      TestHelper.setUpServices(
+      setUpServices(
         mockNetworkService: true,
         onNetworkServiceRegistered: (networkService) {
           when(networkService.get('products/categories')).thenAnswer(
@@ -28,7 +28,7 @@ void main() {
       );
     });
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     group('Get categories -', () {
       test('should fetch categories', () async {

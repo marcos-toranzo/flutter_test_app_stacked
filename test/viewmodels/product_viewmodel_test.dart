@@ -11,8 +11,8 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('ProductViewModel Tests -', () {
-    setUp(
-      () => TestHelper.setUpServices(
+    setUp(() {
+      setUpServices(
         mockProductService: true,
         mockCartService: true,
         onProductServiceRegistered: (productService) {
@@ -37,10 +37,10 @@ void main() {
             return const SuccessApiResponse(data: MockData.product1);
           });
         },
-      ),
-    );
+      );
+    });
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     test('should initialize', () async {
       final viewModel = ProductViewModel(MockData.product1.id);

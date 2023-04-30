@@ -199,16 +199,16 @@ void main() {
     });
 
     group('View -', () {
-      setUpAll(
-        () => TestHelper.setUp(
-          screen: (_) => ProductView(productId: MockData.product1.id),
-        ),
-      );
+      setUpAll(() {
+        testWidgetSetUpAll(
+          screenBuilder: (_) => ProductView(productId: MockData.product1.id),
+        );
+      });
 
-      tearDownAll(() => TestHelper.setUp());
+      tearDownAll(testWidgetReset);
 
-      setUp(
-        () => TestHelper.setUpServices(
+      setUp(() {
+        setUpServices(
           mockProductService: true,
           mockCartService: true,
           onProductServiceRegistered: (productService) {
@@ -236,16 +236,16 @@ void main() {
               },
             );
           },
-        ),
-      );
+        );
+      });
 
-      tearDown(() => locator.reset());
+      tearDown(tearDownServices);
 
       testWidgets(
         'should display components',
         testWidget(
           settle: false,
-          wait: false,
+          wait: null,
           mockNetworkImage: true,
           (helper) async {
             await helper.wait(milliseconds: 500);

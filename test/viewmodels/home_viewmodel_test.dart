@@ -12,8 +12,8 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('HomeViewmodel Tests -', () {
-    setUp(
-      () => TestHelper.setUpServices(
+    setUp(() {
+      setUpServices(
         mockProductService: true,
         mockCartService: true,
         onProductServiceRegistered: (productService) {
@@ -22,10 +22,10 @@ void main() {
             return SuccessApiResponse(data: MockData.categories);
           });
         },
-      ),
-    );
+      );
+    });
 
-    tearDown(() => locator.reset());
+    tearDown(tearDownServices);
 
     test('should initialize', () async {
       final viewModel = HomeViewModel();
