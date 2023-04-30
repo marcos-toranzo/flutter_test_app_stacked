@@ -58,6 +58,7 @@ class HomeViewModel extends ReactiveViewModel {
     String category,
     int page,
   ) async {
+    await Future.delayed(const Duration(seconds: 3));
     final result = category == allCategories
         ? await _productService.getProducts(
             limit: productsLimit,

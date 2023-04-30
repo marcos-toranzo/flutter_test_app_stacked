@@ -488,6 +488,11 @@ class TestHelper {
     return tester.state(find.byType(Navigator));
   }
 
+  Future<void> ensureVisible(String keyValue) async {
+    await tester.ensureVisible(find.byKey(ValueKey(keyValue)));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> _tap(
     Finder finder, {
     bool warnIfMissed = true,

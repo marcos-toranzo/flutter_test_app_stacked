@@ -5,14 +5,14 @@ import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class ProductsList extends StatefulWidget {
-  final Future<ProductFetchingResult> Function(int page) fetchPage;
-  final void Function(int productId) onProductTap;
-  final Widget Function(int productId)? trailingBuilder;
+  final Future<ProductFetchingResult> Function(int page) onFetchPage;
+  final void Function(int productId)? onProductTapBuilder;
+  final Widget Function(int productId)? productTrailingBuilder;
 
   const ProductsList({
-    required this.fetchPage,
-    required this.onProductTap,
-    this.trailingBuilder,
+    required this.onFetchPage,
+    this.onProductTapBuilder,
+    this.productTrailingBuilder,
     super.key,
   });
 
@@ -45,7 +45,7 @@ class ProductsListState extends State<ProductsList> {
   }
 
   Future<void> _fetchPage(int page) async {
-    final result = await widget.fetchPage(page);
+    final result = await widget.onFetchPage(page);
 
     if (_controllerDisposed) {
       return;
@@ -82,15 +82,27 @@ class ProductsListState extends State<ProductsList> {
       builderDelegate: PagedChildBuilderDelegate(
         animateTransitions: true,
         itemBuilder: (_, item, __) => ProductItem(
-          onTap: () {
-            widget.onProductTap(item.id);
-          },
-          product: item,
-          trailing: widget.trailingBuilder?.call(item.id),
           key: ValueKey('ProductItem#${item.id}'),
+          product: item,
+          onTap: () {
+            widget.onProductTapBuilder?.call(item.id);
+          },
+          trailing: widget.productTrailingBuilder?.call(item.id),
         ),
         noItemsFoundIndicatorBuilder: (_) => const Center(
           child: Text('No products found'),
+        ),
+        newPageProgressIndicatorBuilder: (_) => Column(
+          children: const [
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: SizedBox.square(
+                child: CircularProgressIndicator(
+                  key: ValueKey('productsListNewPageProgressIndicator'),
+                ),
+              ),
+            ),
+          ],
         ),
         noMoreItemsIndicatorBuilder: (_) {
           final length = _pagingController.itemList?.length;

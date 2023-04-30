@@ -56,11 +56,11 @@ class HomeView extends StackedView<HomeViewModel> {
             body: TabBarView(
               children: viewModel.categories.mapList((category) {
                 return ProductsList(
-                  onProductTap: viewModel.onProductTap,
+                  onProductTapBuilder: viewModel.onProductTap,
                   key: category == allCategories ? _productsListKey : null,
-                  fetchPage: (page) =>
+                  onFetchPage: (page) =>
                       viewModel.getCategoryProducts(category, page),
-                  trailingBuilder: (productId) => CustomButton(
+                  productTrailingBuilder: (productId) => CustomButton(
                     icon: CustomIcon.shoppingCart(),
                     circular: false,
                     onPressed: viewModel.busy(productId)

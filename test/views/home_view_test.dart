@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/products_list.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -302,6 +306,168 @@ void main() {
               await helper.enterText(searchBar, 'asd');
 
               expect(searchText, 'asd');
+            },
+          )(widgetTester);
+        },
+      );
+    });
+
+    group('ProductsList -', () {
+      testWidgets(
+        'should fetch products and show total',
+        (widgetTester) async {
+          final products = MockData.products.take(2).toList();
+
+          await testWidget(
+            scaffoldBodyBuilder: (_) => ProductsList(
+              onFetchPage: (_) async => ProductFetchingResult(
+                products: products,
+                last: true,
+              ),
+            ),
+            mockNetworkImage: true,
+            (helper) async {
+              await helper.settle();
+
+              final List<ProductItem> items =
+                  helper.nWidgetsByType(products.length);
+
+              expect(items.map((e) => e.product).toList(), products);
+
+              helper.text('${products.length} products', skipOffstage: false);
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should fetch products by step',
+        (widgetTester) async {
+          final products = MockData.products;
+
+          const productsLimit = 5;
+          int currentPage = 0;
+
+          await testWidget(
+            scaffoldBodyBuilder: (_) => ProductsList(
+              onFetchPage: (page) async {
+                await Future.delayed(const Duration(seconds: 1));
+
+                currentPage = page;
+
+                return ProductFetchingResult(
+                  products: products.sublist(
+                    currentPage * productsLimit,
+                    (currentPage + 1) * productsLimit,
+                  ),
+                  last: (currentPage + 1) * productsLimit >= products.length,
+                );
+              },
+            ),
+            mockNetworkImage: true,
+            wait: false,
+            settle: false,
+            (helper) async {
+              helper.widgetByType<CircularProgressIndicator>();
+
+              await helper.wait(seconds: 1);
+
+              final List<ProductItem> items =
+                  helper.nWidgetsByType(productsLimit, skipOffstage: false);
+
+              expect(
+                items.map((e) => e.product).toList(),
+                products.sublist(0, productsLimit),
+              );
+
+              helper.widgetByValueKey<CircularProgressIndicator>(
+                'productsListNewPageProgressIndicator',
+                skipOffstage: false,
+              );
+
+              await helper.settle();
+
+              for (var product in products) {
+                await helper.ensureVisible('ProductItem#${product.id}');
+              }
+
+              helper.text('${products.length} products', skipOffstage: false);
+
+              await helper.settle();
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should call on onProductTap',
+        (widgetTester) async {
+          final products = MockData.products.take(2).toList();
+
+          final productTappedMap = Map.fromIterables(
+            products.map((e) => e.id),
+            List.filled(products.length, false),
+          );
+
+          await testWidget(
+            scaffoldBodyBuilder: (_) => ProductsList(
+              onFetchPage: (_) async => ProductFetchingResult(
+                products: products,
+                last: true,
+              ),
+              onProductTapBuilder: (productId) {
+                productTappedMap[productId] = true;
+              },
+            ),
+            mockNetworkImage: true,
+            (helper) async {
+              for (var product in products) {
+                await helper.tapWithValueKey(
+                  'ProductItem#${product.id}',
+                  ensureVisible: true,
+                );
+
+                expect(productTappedMap[product.id], true);
+              }
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should build trailing',
+        (widgetTester) async {
+          final products = MockData.products.take(2).toList();
+
+          final productTrailingTappedMap = Map.fromIterables(
+            products.map((e) => e.id),
+            List.filled(products.length, false),
+          );
+
+          await testWidget(
+            scaffoldBodyBuilder: (_) => ProductsList(
+              onFetchPage: (_) async => ProductFetchingResult(
+                products: products,
+                last: true,
+              ),
+              productTrailingBuilder: (productId) => IconButton(
+                key: ValueKey('trailing#$productId'),
+                onPressed: () {
+                  productTrailingTappedMap[productId] = true;
+                },
+                icon: const Icon(Icons.abc),
+              ),
+            ),
+            mockNetworkImage: true,
+            (helper) async {
+              for (var product in products) {
+                await helper.tapWithValueKey(
+                  'trailing#${product.id}',
+                  ensureVisible: true,
+                );
+
+                expect(productTrailingTappedMap[product.id], true);
+              }
             },
           )(widgetTester);
         },
