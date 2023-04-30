@@ -45,19 +45,14 @@ class ProductService {
     List<ProductField>? select,
   }) async {
     try {
-      final Map<String, dynamic> params = {
-        'limit': limit.toString(),
-        'skip': skip.toString(),
-        'q': search,
-      };
-
-      if (select != null) {
-        params['select'] = select.map((e) => e.name).toList();
-      }
-
       final response = await _networkService.get(
         'products/search',
-        params: params,
+        params: {
+          'limit': limit.toString(),
+          'skip': skip.toString(),
+          'q': search,
+          if (select != null) 'select': select.map((e) => e.name).toList(),
+        },
       );
 
       if (response.statusCode != StatusCode.ok) {
@@ -111,18 +106,13 @@ class ProductService {
     List<ProductField>? select,
   }) async {
     try {
-      final Map<String, dynamic> params = {
-        'limit': limit.toString(),
-        'skip': skip.toString(),
-      };
-
-      if (select != null) {
-        params['select'] = select.map((e) => e.name).toList();
-      }
-
       final response = await _networkService.get(
         'products/category/$category',
-        params: params,
+        params: {
+          'limit': limit.toString(),
+          'skip': skip.toString(),
+          if (select != null) 'select': select.map((e) => e.name).toList(),
+        },
       );
 
       if (response.statusCode != StatusCode.ok) {
@@ -151,15 +141,11 @@ class ProductService {
     List<ProductField>? select,
   }) async {
     try {
-      final Map<String, dynamic> params = {};
-
-      if (select != null) {
-        params['select'] = select.map((e) => e.name).toList();
-      }
-
       final response = await _networkService.get(
         'products/$id',
-        params: params,
+        params: {
+          if (select != null) 'select': select.map((e) => e.name).toList(),
+        },
       );
 
       if (response.statusCode != StatusCode.ok) {

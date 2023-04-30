@@ -244,8 +244,7 @@ void main() {
       testWidgets(
         'should display components',
         testWidget(
-          settle: false,
-          wait: null,
+          settleAfterPump: false,
           mockNetworkImage: true,
           (helper) async {
             await helper.wait(milliseconds: 500);

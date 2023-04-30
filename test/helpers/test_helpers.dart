@@ -33,21 +33,33 @@ import 'test_helpers.mocks.dart';
   MockSpec<sqflite.Database>(onMissingStub: OnMissingStub.returnDefault),
 // @stacked-mock-spec
 ])
-Future<void> Function(TestHelper helper)? _onPumpApp;
-Future<void> Function(TestHelper helper)? _afterCallback;
-WidgetBuilder? _setUpScreenBuilder;
-WidgetBuilder? _setUpScaffoldBodyBuilder;
+WidgetBuilder? _screenBuilderAll;
+WidgetBuilder? _scaffoldBodyBuilderAll;
+bool? _settleAfterPumpAll;
+bool? _mockNetworkImageAll;
+bool? _setUpDialogUiAll;
+bool? _setUpBottomSheetUiAll;
+Future<void> Function(TestHelper helper)? _onAppPumped;
+Future<void> Function(TestHelper helper)? _onCallbackCalled;
 
 void testWidgetSetUpAll({
-  Future<void> Function(TestHelper helper)? onPumpApp,
-  Future<void> Function(TestHelper helper)? afterCallback,
   WidgetBuilder? screenBuilder,
   WidgetBuilder? scaffoldBodyBuilder,
+  bool? settleAfterPump,
+  bool? mockNetworkImage,
+  bool? setUpDialogUi,
+  bool? setUpBottomSheetUi,
+  Future<void> Function(TestHelper helper)? onAppPumped,
+  Future<void> Function(TestHelper helper)? onCallbackCalled,
 }) {
-  _onPumpApp = onPumpApp;
-  _afterCallback = afterCallback;
-  _setUpScreenBuilder = screenBuilder;
-  _setUpScaffoldBodyBuilder = scaffoldBodyBuilder;
+  _screenBuilderAll = screenBuilder;
+  _scaffoldBodyBuilderAll = scaffoldBodyBuilder;
+  _settleAfterPumpAll = settleAfterPump;
+  _mockNetworkImageAll = mockNetworkImage;
+  _setUpDialogUiAll = setUpDialogUi;
+  _setUpBottomSheetUiAll = setUpBottomSheetUi;
+  _onAppPumped = onAppPumped;
+  _onCallbackCalled = onCallbackCalled;
 }
 
 void testWidgetReset() {
@@ -165,11 +177,10 @@ Future<void> Function(WidgetTester) testWidget(
   FutureOr<void> Function()? setUp,
   WidgetBuilder? screenBuilder,
   WidgetBuilder? scaffoldBodyBuilder,
-  Duration? wait = const Duration(seconds: 20),
-  bool settle = true,
-  bool mockNetworkImage = false,
-  bool setUpDialogUi = false,
-  bool setUpBottomSheetUi = false,
+  bool? settleAfterPump,
+  bool? mockNetworkImage,
+  bool? setUpDialogUi,
+  bool? setUpBottomSheetUi,
 }) {
   return (tester) async {
     Future<void> f() async {
@@ -177,35 +188,31 @@ Future<void> Function(WidgetTester) testWidget(
 
       final helper = TestHelper(tester);
 
-      if (setUpDialogUi) {
+      if (setUpDialogUi ?? _setUpDialogUiAll == true) {
         setupDialogUi();
       }
-      if (setUpBottomSheetUi) {
+
+      if (setUpBottomSheetUi ?? _setUpBottomSheetUiAll == true) {
         setupBottomSheetUi();
       }
 
       await helper.pumpApp(
         InitialTestScreen(
-          screenBuilder: screenBuilder ?? _setUpScreenBuilder,
-          scaffoldBodyBuilder: scaffoldBodyBuilder ?? _setUpScaffoldBodyBuilder,
+          screenBuilder: screenBuilder ?? _screenBuilderAll,
+          scaffoldBodyBuilder: scaffoldBodyBuilder ?? _scaffoldBodyBuilderAll,
         ),
-        wait: wait,
-        settle: settle,
+        settle: settleAfterPump ?? _settleAfterPumpAll ?? true,
       );
 
-      if (_onPumpApp != null) {
-        await _onPumpApp!(helper);
-      }
+      await _onAppPumped?.call(helper);
 
       await callback(helper);
 
-      if (_afterCallback != null) {
-        await _afterCallback!(helper);
-      }
+      await _onCallbackCalled?.call(helper);
     }
 
-    if (mockNetworkImage) {
-      await mockNetworkImagesFor(() => f());
+    if (mockNetworkImage ?? _mockNetworkImageAll == true) {
+      await mockNetworkImagesFor(f);
     } else {
       await f();
     }
@@ -219,8 +226,7 @@ class TestHelper {
 
   Future<void> pumpApp(
     Widget child, {
-    Duration? wait = const Duration(seconds: 20),
-    bool settle = true,
+    bool settle = false,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -233,10 +239,6 @@ class TestHelper {
         ],
       ),
     );
-
-    if (wait != null) {
-      await tester.pump(wait);
-    }
 
     if (settle) {
       await tester.pumpAndSettle();

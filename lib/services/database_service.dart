@@ -91,8 +91,7 @@ class DatabaseService {
     database = await openDatabase(
       join(await getDatabasesPath(), _databaseName),
       onCreate: (db, version) async {
-        await db.execute(
-            '''
+        await db.execute('''
             CREATE TABLE ${CartEntry.tableName}(
               ${DatabaseModel.columnId} integer PRIMARY KEY AUTOINCREMENT,
               ${CartEntry.columnProductId} integer NOT NULL UNIQUE,
@@ -147,24 +146,26 @@ WhereClauseParsingResult parseWhereClauses(List<WhereClause>? whereClauses) {
     return const WhereClauseParsingResult();
   }
 
-  final List<Object?> whereArgs = [];
+  List<Object?> whereArgs = [];
 
-  final List<String> wheres = [];
+  List<String> wheres = [];
 
   for (var whereClause in whereClauses) {
     switch (whereClause.runtimeType) {
       case WhereEqualClause:
-        wheres.add('${whereClause.column} = ?');
-        whereArgs.add(whereClause.value);
+        wheres = [...wheres, '${whereClause.column} = ?'];
+        whereArgs = [...whereArgs, whereClause.value];
         break;
       case WhereInClause:
         final whereInClause = whereClause as WhereInClause;
 
-        wheres.add(
+        wheres = [
+          ...wheres,
           '${whereClause.column} IN '
-          '(${List.filled(whereInClause.value.length, '?').join(', ')})',
-        );
-        whereArgs.addAll(whereClause.value);
+              '(${List.filled(whereInClause.value.length, '?').join(', ')})'
+        ];
+
+        whereArgs = [...whereArgs, ...whereClause.value];
         break;
     }
   }
