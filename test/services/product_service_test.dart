@@ -4,7 +4,6 @@ import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
@@ -32,7 +31,7 @@ void main() {
 
     group('Get categories -', () {
       test('should fetch categories', () async {
-        final productService = locator<ProductService>();
+        final ProductService productService = getService();
 
         final response = await productService.getCategories();
 
@@ -44,8 +43,8 @@ void main() {
 
     group('Get products -', () {
       test('should fetch products', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         when(networkService.get('products/search', params: {
           'limit': '0',
@@ -81,8 +80,8 @@ void main() {
       });
 
       test('should fetch products with params', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const limit = 3;
         const skip = 4;
@@ -133,8 +132,8 @@ void main() {
 
     group('Get products with ids -', () {
       test('should fetch products with ids', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         when(networkService.get('products/search', params: {
           'limit': '100',
@@ -167,8 +166,8 @@ void main() {
       });
 
       test('should fetch products with ids with params', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const select = [
           ProductField.id,
@@ -215,8 +214,8 @@ void main() {
 
     group('Get category products -', () {
       test('should fetch category products', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const category = MockData.category1;
 
@@ -247,8 +246,8 @@ void main() {
       });
 
       test('should fetch category products with params', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const category = MockData.category1;
 
@@ -297,8 +296,8 @@ void main() {
 
     group('Get product -', () {
       test('should fetch product', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const product = MockData.product1;
 
@@ -320,8 +319,8 @@ void main() {
       });
 
       test('should fetch product with params', () async {
-        final productService = locator<ProductService>();
-        final networkService = locator<NetworkService>();
+        final ProductService productService = getService();
+        final NetworkService networkService = getService();
 
         const select = [
           ProductField.id,

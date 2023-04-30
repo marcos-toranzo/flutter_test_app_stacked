@@ -4,7 +4,6 @@ import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
@@ -44,7 +43,7 @@ void main() {
     });
 
     test('should refresh categories', () async {
-      final productService = locator<ProductService>();
+      final ProductService productService = getService();
 
       final categories = MockData.categories.take(2).toList();
 
@@ -72,7 +71,7 @@ void main() {
 
     group('Get category products -', () {
       test('should fetch all products', () async {
-        final productService = locator<ProductService>();
+        final ProductService productService = getService();
 
         when(productService.getProducts(
           limit: productsLimit,
@@ -134,7 +133,7 @@ void main() {
       });
 
       test('should fetch category products', () async {
-        final productService = locator<ProductService>();
+        final ProductService productService = getService();
 
         const category = MockData.category1;
         final categoryProducts =
@@ -178,7 +177,7 @@ void main() {
     });
 
     test('should add product to cart', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.addProduct(MockData.cartEntry1.productId))
           .thenAnswer((_) async {

@@ -1,7 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/app/app.dialogs.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
@@ -290,7 +289,7 @@ void main() {
         'should display error',
         testWidget(
           setUp: () {
-            final productService = locator<ProductService>();
+            final ProductService productService = getService();
 
             when(
               productService.getProduct(
@@ -324,7 +323,7 @@ void main() {
         testWidget(
           mockNetworkImage: true,
           (helper) async {
-            final productService = locator<ProductService>();
+            final ProductService productService = getService();
             const product = MockData.product2;
 
             when(
@@ -386,7 +385,7 @@ void main() {
             },
             mockNetworkImage: true,
             (helper) async {
-              final cartService = locator<CartService>();
+              final CartService cartService = getService();
 
               when(
                 cartService.addProduct(MockData.product1.id),
@@ -414,7 +413,7 @@ void main() {
             },
             mockNetworkImage: true,
             (helper) async {
-              final cartService = locator<CartService>();
+              final CartService cartService = getService();
 
               when(
                 cartService.addProduct(MockData.product1.id),

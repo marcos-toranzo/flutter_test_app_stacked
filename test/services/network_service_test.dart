@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +25,7 @@ void main() {
 
     group('GET -', () {
       test('should call correctly', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         when(
           client.get(
@@ -44,7 +43,7 @@ void main() {
       });
 
       test('should call correctly with params', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         const params = {'a': 'b'};
 
@@ -69,7 +68,7 @@ void main() {
 
     group('POST -', () {
       test('should call correctly', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         when(
           client.post(
@@ -89,7 +88,7 @@ void main() {
       });
 
       test('should call correctly with body', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         const body = {'a': 'b'};
 
@@ -113,7 +112,7 @@ void main() {
 
     group('PUT -', () {
       test('should call correctly', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         when(
           client.put(
@@ -133,7 +132,7 @@ void main() {
       });
 
       test('should call correctly with body', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         const body = {'a': 'b'};
 
@@ -157,7 +156,7 @@ void main() {
 
     group('PATCH -', () {
       test('should call correctly', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         when(
           client.patch(
@@ -177,7 +176,7 @@ void main() {
       });
 
       test('should call correctly with body', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         const body = {'a': 'b'};
 
@@ -201,7 +200,7 @@ void main() {
 
     group('DELETE -', () {
       test('should call correctly', () async {
-        final networkService = locator<NetworkService>();
+        final NetworkService networkService = getService();
 
         when(
           client.delete(

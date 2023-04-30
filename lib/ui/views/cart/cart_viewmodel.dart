@@ -20,9 +20,10 @@ class CartViewModel extends ReactiveViewModel {
   List<Product>? get products => _products != null ? [..._products!] : null;
 
   double get total =>
-      products?.reduceAndCompute(
-          (acc, product) => acc! + product.price * getProductCount(product.id),
-          0.0) ??
+      products?.fold(
+        0.0,
+        (acc, product) => acc! + product.price * getProductCount(product.id),
+      ) ??
       0;
 
   int get count => _cartService.count;

@@ -4,7 +4,6 @@ import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/cart/cart_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
@@ -61,7 +60,7 @@ void main() {
     });
 
     test('should return total', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.entries).thenReturn(MockData.cartEntries);
 
@@ -73,7 +72,7 @@ void main() {
     });
 
     test('should return product count', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.entries).thenReturn(MockData.cartEntries);
 
@@ -88,7 +87,7 @@ void main() {
     });
 
     test('should empty cart', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.empty()).thenAnswer(
         (_) async {
@@ -113,7 +112,7 @@ void main() {
     });
 
     test('should add product', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.addProduct(MockData.cartEntry1.productId))
           .thenAnswer((_) async {
@@ -137,7 +136,7 @@ void main() {
     });
 
     test('should remove product', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.removeProduct(MockData.cartEntry1.productId))
           .thenAnswer((_) async {

@@ -172,6 +172,10 @@ void _registerService<T extends Object>(
   onRegistered?.call(service);
 }
 
+T getService<T extends Object>() {
+  return locator<T>();
+}
+
 Future<void> Function(WidgetTester) testWidget(
   Future<void> Function(TestHelper helper) callback, {
   FutureOr<void> Function()? setUp,

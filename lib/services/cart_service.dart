@@ -15,8 +15,7 @@ class CartService with ListenableServiceMixin {
     getEntries();
   }
 
-  int get count =>
-      entries.reduceAndCompute((acc, element) => acc + element.count, 0);
+  int get count => entries.fold(0, (acc, element) => acc + element.count);
 
   List<CartEntry> _entries = [];
   List<CartEntry> get entries => [..._entries];

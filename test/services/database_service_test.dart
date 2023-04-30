@@ -1,7 +1,6 @@
 import 'package:flutter_app_test_stacked/models/database_model.dart';
 import 'package:flutter_app_test_stacked/services/database_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -61,7 +60,7 @@ void main() {
 
     group('Insert -', () {
       test('should insert', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         final model = MockDatabaseModel(a: 'a', b: 2);
 
@@ -82,7 +81,7 @@ void main() {
 
     group('Update -', () {
       test('should update', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         final model = MockDatabaseModel(id: 1, a: 'a', b: 2);
 
@@ -101,7 +100,7 @@ void main() {
       });
 
       test('should update with where clauses', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         final model = MockDatabaseModel(id: 1, a: 'a', b: 2);
         const whereClause = WhereEqualClause(
@@ -131,7 +130,7 @@ void main() {
 
     group('Delete -', () {
       test('should delete', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         when(db.delete('table')).thenAnswer((_) async => 1);
 
@@ -141,7 +140,7 @@ void main() {
       });
 
       test('should delete with where clauses', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         const whereClause = WhereEqualClause(
           column: 'column',
@@ -167,7 +166,7 @@ void main() {
 
     group('Get -', () {
       test('should get', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         when(db.query('table'))
             .thenAnswer((_) async => [MockData.cartEntry1.toMap()]);
@@ -178,7 +177,7 @@ void main() {
       });
 
       test('should get with columns', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         const columns = ['a', 'b'];
 
@@ -196,7 +195,7 @@ void main() {
       });
 
       test('should get with where clauses', () async {
-        final databaseService = locator<DatabaseService>();
+        final DatabaseService databaseService = getService();
 
         const columns = ['a', 'b'];
 

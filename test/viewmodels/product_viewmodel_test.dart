@@ -3,7 +3,6 @@ import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/product/product_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
@@ -57,7 +56,7 @@ void main() {
     });
 
     test('should add to cart', () async {
-      final cartService = locator<CartService>();
+      final CartService cartService = getService();
 
       when(cartService.addProduct(MockData.cartEntry1.productId))
           .thenAnswer((_) async {

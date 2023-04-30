@@ -4,7 +4,6 @@ import 'package:flutter_app_test_stacked/models/database_model.dart';
 import 'package:flutter_app_test_stacked/services/cart_service.dart';
 import 'package:flutter_app_test_stacked/services/database_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app_test_stacked/app/app.locator.dart';
 import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
@@ -29,7 +28,7 @@ void main() {
 
     group('Get entries -', () {
       test('should get entries', () async {
-        final cartService = locator<CartService>();
+        final CartService cartService = getService();
 
         final result = await cartService.getEntries();
 
@@ -43,8 +42,8 @@ void main() {
 
     group('Add product -', () {
       test('should add new entry', () async {
-        final databaseService = locator<DatabaseService>();
-        final cartService = locator<CartService>();
+        final DatabaseService databaseService = getService();
+        final CartService cartService = getService();
 
         final productId = MockData.product4.id;
         const cartId = 4;
@@ -73,8 +72,8 @@ void main() {
       });
 
       test('should increase entry count', () async {
-        final databaseService = locator<DatabaseService>();
-        final cartService = locator<CartService>();
+        final DatabaseService databaseService = getService();
+        final CartService cartService = getService();
 
         final cartEntry = MockData.cartEntry1;
 
@@ -120,8 +119,8 @@ void main() {
 
     group('Remove product -', () {
       test('should remove entry', () async {
-        final databaseService = locator<DatabaseService>();
-        final cartService = locator<CartService>();
+        final DatabaseService databaseService = getService();
+        final CartService cartService = getService();
 
         final cartEntry = MockData.cartEntry1;
 
@@ -160,8 +159,8 @@ void main() {
       });
 
       test('should decrease entry count', () async {
-        final databaseService = locator<DatabaseService>();
-        final cartService = locator<CartService>();
+        final DatabaseService databaseService = getService();
+        final CartService cartService = getService();
 
         final cartEntry = MockData.cartEntry2;
 
@@ -207,8 +206,8 @@ void main() {
 
     group('Empty -', () {
       test('should empty entries', () async {
-        final cartService = locator<CartService>();
-        final databaseService = locator<DatabaseService>();
+        final CartService cartService = getService();
+        final DatabaseService databaseService = getService();
 
         when(databaseService.delete(tableName: CartEntry.tableName)).thenAnswer(
           (_) async {
