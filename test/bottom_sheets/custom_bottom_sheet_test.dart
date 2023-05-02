@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_test_stacked/app/app.bottomsheets.dart';
+import 'package:flutter_app_test_stacked/ui/bottom_sheets/custom/custom_sheet.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -13,9 +14,7 @@ void main() {
       );
     });
 
-    setUp(() {
-      setUpServices();
-    });
+    setUp(setUpServices);
 
     tearDown(tearDownServices);
 
@@ -35,6 +34,8 @@ void main() {
         ),
         (helper) async {
           await helper.tap(TextButton);
+
+          helper.widgetByType<CustomSheet>();
 
           helper.text('button');
         },
