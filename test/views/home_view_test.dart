@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test_stacked/services/cart_service.dart';
+import 'package:flutter_app_test_stacked/app/app.router.dart';
+import 'package:flutter_app_test_stacked/models/cart_entry.dart';
+import 'package:flutter_app_test_stacked/models/database_model.dart';
+import 'package:flutter_app_test_stacked/services/database_service.dart';
 import 'package:flutter_app_test_stacked/services/network_service.dart';
 import 'package:flutter_app_test_stacked/services/product_service.dart';
+import 'package:flutter_app_test_stacked/ui/dialogs/info_alert/info_alert_dialog.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_view.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_viewmodel.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/products_list.dart';
+import 'package:flutter_app_test_stacked/ui/widgets/custom_button.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
 import 'package:flutter_app_test_stacked/utils/formatting.dart';
+import 'package:flutter_app_test_stacked/utils/iterable_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:stacked_services/stacked_services.dart';
 
 import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
@@ -479,10 +486,13 @@ void main() {
     });
 
     group('View -', () {
+      final products = MockData.products.take(10).toList();
+
       setUpAll(() {
         testWidgetSetUpAll(
           screenBuilder: (_) => HomeView(),
           setUpDialogUi: true,
+          mockNetworkImage: true,
         );
       });
 
@@ -490,9 +500,66 @@ void main() {
 
       setUp(() {
         setUpServices(
-          mockCartService: true,
           mockNavigationService: true,
           mockProductService: true,
+          mockDatabaseService: true,
+          onProductServiceRegistered: (productService) {
+            when(productService.getProducts(
+              limit: productsLimit,
+              skip: 0 * productsLimit,
+              search: '',
+              select: [
+                ProductField.id,
+                ProductField.price,
+                ProductField.thumbnail,
+                ProductField.title,
+                ProductField.discountPercentage,
+              ],
+            )).thenAnswer(
+              (_) async => SuccessApiResponse(
+                data: products,
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                total: products.length,
+              ),
+            );
+
+            when(productService.getCategories()).thenAnswer(
+              (_) async => SuccessApiResponse(
+                data: MockData.categories,
+              ),
+            );
+          },
+          onDatabaseServiceRegistered: (databaseService) {
+            when(databaseService.get(tableName: CartEntry.tableName))
+                .thenAnswer(
+              (_) async => MockData.cartEntries.mapList((p0) => p0.toMap()),
+            );
+
+            final cartEntry = MockData.cartEntry1;
+
+            when(databaseService.get(
+              tableName: CartEntry.tableName,
+              whereClauses: [
+                WhereEqualClause(
+                    column: CartEntry.columnProductId,
+                    value: cartEntry.productId),
+              ],
+            )).thenAnswer(
+              (_) async => [cartEntry.toMap()],
+            );
+
+            final editedEntry = cartEntry.copyWithCount(cartEntry.count + 1);
+
+            when(databaseService.update(
+              tableName: CartEntry.tableName,
+              model: editedEntry,
+              whereClauses: [
+                WhereEqualClause(
+                    column: DatabaseModel.columnId, value: cartEntry.id),
+              ],
+            )).thenAnswer((_) async => 1);
+          },
         );
       });
 
@@ -500,18 +567,266 @@ void main() {
 
       testWidgets(
         'should display components',
+        testWidget(
+          (helper) async {
+            final ShoppingCartAppBarButton shoppingCartAppBarButton =
+                helper.widgetByType();
+
+            expect(shoppingCartAppBarButton.count, MockData.cartCount);
+
+            final AppTabBar appTabBar = helper.widgetByType();
+
+            expect(appTabBar.loading, false);
+            expect(appTabBar.tabsLabels, [
+              allCategories,
+              ...MockData.categories.map((e) => e.capitalize())
+            ]);
+
+            helper.widgetByType<ProductsList>();
+
+            for (var product in products) {
+              await helper.ensureVisible('ProductItem#${product.id}');
+            }
+          },
+        ),
+      );
+
+      testWidgets(
+        'should display error on init viewmodel',
+        testWidget(
+          setUp: () {
+            final ProductService productService = getService();
+
+            when(productService.getCategories()).thenAnswer(
+              (_) async => const ErrorApiResponse(),
+            );
+          },
+          (helper) async {
+            final InfoAlertDialog infoAlertDialog = helper.widgetByType();
+
+            expect(infoAlertDialog.request.data, false);
+            expect(
+              infoAlertDialog.request.description,
+              'Something went wrong trying to fetch the categories.',
+            );
+          },
+        ),
+      );
+
+      testWidgets(
+        'should show error on refresh and refresh',
+        testWidget(
+          setUp: () {
+            final ProductService productService = getService();
+
+            when(productService.getCategories()).thenAnswer(
+              (_) async => const ErrorApiResponse(),
+            );
+          },
+          (helper) async {
+            AppTabBar appTabBar = helper.widgetByType();
+
+            expect(
+              appTabBar.tabsLabels,
+              [allCategories],
+            );
+
+            Text text = helper.text('Got it');
+
+            await helper.tapWidget(text);
+
+            await helper.tapWithValueKey('appTabBarRefreshButton');
+
+            final InfoAlertDialog infoAlertDialog = helper.widgetByType();
+
+            expect(infoAlertDialog.request.data, false);
+            expect(
+              infoAlertDialog.request.description,
+              'Something went wrong trying to fetch the categories.',
+            );
+
+            text = helper.text('Got it');
+
+            await helper.tapWidget(text);
+
+            final ProductService productService = getService();
+
+            when(productService.getCategories()).thenAnswer(
+              (_) async => SuccessApiResponse(
+                data: MockData.categories,
+              ),
+            );
+            final categoryProducts =
+                MockData.getCategoryProducts(MockData.category1);
+            final category = MockData.category1.capitalize();
+
+            when(productService.getCategoryProducts(
+              category,
+              limit: productsLimit,
+              skip: 0 * productsLimit,
+              select: [
+                ProductField.id,
+                ProductField.price,
+                ProductField.thumbnail,
+                ProductField.title,
+                ProductField.discountPercentage,
+              ],
+            )).thenAnswer(
+              (_) async => SuccessApiResponse(
+                data: categoryProducts,
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                total: categoryProducts.length,
+              ),
+            );
+
+            await helper.tapWithValueKey('appTabBarRefreshButton');
+
+            appTabBar = helper.widgetByType();
+
+            expect(
+              appTabBar.tabsLabels,
+              [
+                allCategories,
+                ...MockData.categories.map((e) => e.capitalize())
+              ],
+            );
+          },
+        ),
+      );
+
+      testWidgets(
+        'should go to cart view',
         (widgetTester) async {
-          final products = MockData.products.take(10).toList();
+          bool wentToCartView = false;
 
           await testWidget(
-            mockNetworkImage: true,
+            setUp: () {
+              final NavigationService navigationService = getService();
+
+              when(navigationService.navigateToCartView())
+                  .thenAnswer((_) async {
+                wentToCartView = true;
+              });
+            },
+            (helper) async {
+              await helper.tap(ShoppingCartAppBarButton);
+
+              assert(wentToCartView);
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should go to product view',
+        (widgetTester) async {
+          bool wentToProductView = false;
+          final productId = products[0].id;
+
+          await testWidget(
+            setUp: () {
+              final NavigationService navigationService = getService();
+
+              when(navigationService.navigateToProductView(
+                      productId: productId))
+                  .thenAnswer((_) async {
+                wentToProductView = true;
+              });
+            },
+            (helper) async {
+              await helper.tapWithValueKey('ProductItem#$productId');
+
+              assert(wentToProductView);
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should add product to cart',
+        (widgetTester) async {
+          final productId = products[0].id;
+
+          await testWidget(
+            (helper) async {
+              final ProductItem productItem =
+                  helper.widgetByValueKey('ProductItem#$productId');
+
+              final CustomButton addToCartButton =
+                  helper.descendant(productItem);
+
+              await helper.tapWidget(addToCartButton);
+
+              final ShoppingCartAppBarButton shoppingCartAppBarButton =
+                  helper.widgetByType();
+
+              expect(shoppingCartAppBarButton.count, MockData.cartCount + 1);
+
+              final InfoAlertDialog dialog = helper.widgetByType();
+
+              expect(dialog.request.data, true);
+              expect(dialog.request.description, 'Product added to cart.');
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should show error on adding product to cart',
+        (widgetTester) async {
+          final productId = products[0].id;
+
+          await testWidget(
+            setUp: () {
+              final DatabaseService databaseService = getService();
+
+              when(databaseService.update(
+                tableName: CartEntry.tableName,
+                model: MockData.cartEntry1.copyWithCount(2),
+                whereClauses: [
+                  WhereEqualClause(
+                      column: DatabaseModel.columnId,
+                      value: MockData.cartEntry1.id),
+                ],
+              )).thenAnswer((_) async => 0);
+            },
+            (helper) async {
+              final ProductItem productItem =
+                  helper.widgetByValueKey('ProductItem#$productId');
+
+              final CustomButton addToCartButton =
+                  helper.descendant(productItem);
+
+              await helper.tapWidget(addToCartButton);
+
+              final InfoAlertDialog dialog = helper.widgetByType();
+
+              expect(dialog.request.data, false);
+              expect(
+                dialog.request.description,
+                'Something went wrong trying to add product to cart.',
+              );
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should switch categories',
+        (widgetTester) async {
+          final categoryProducts =
+              MockData.getCategoryProducts(MockData.category1);
+          final category = MockData.category1.capitalize();
+
+          await testWidget(
             setUp: () {
               final ProductService productService = getService();
 
-              when(productService.getProducts(
+              when(productService.getCategoryProducts(
+                category,
                 limit: productsLimit,
                 skip: 0 * productsLimit,
-                search: '',
                 select: [
                   ProductField.id,
                   ProductField.price,
@@ -521,38 +836,169 @@ void main() {
                 ],
               )).thenAnswer(
                 (_) async => SuccessApiResponse(
-                  data: products,
+                  data: categoryProducts,
                   limit: productsLimit,
                   skip: 0 * productsLimit,
-                  total: products.length,
+                  total: categoryProducts.length,
                 ),
               );
-
-              when(productService.getCategories()).thenAnswer(
-                (_) async => SuccessApiResponse(
-                  data: MockData.categories,
-                ),
-              );
-
-              final CartService cartService = getService();
-
-              when(cartService.count).thenReturn(MockData.cartCount);
             },
             (helper) async {
-              final ShoppingCartAppBarButton shoppingCartAppBarButton =
-                  helper.widgetByType();
-
-              expect(shoppingCartAppBarButton.count, MockData.cartCount);
-
               final AppTabBar appTabBar = helper.widgetByType();
 
-              expect(appTabBar.loading, false);
-              expect(appTabBar.tabsLabels, [
-                allCategories,
-                ...MockData.categories.map((e) => e.capitalize())
-              ]);
+              final Text categoryText = helper.descendantText(
+                of: appTabBar,
+                text: category,
+                skipOffstage: false,
+              );
 
-              helper.widgetByType<ProductsList>();
+              await helper.tapWidget(categoryText, ensureVisible: true);
+
+              for (var product in categoryProducts) {
+                await helper.ensureVisible('ProductItem#${product.id}');
+              }
+
+              helper.text(
+                '${categoryProducts.length} products',
+                skipOffstage: false,
+              );
+            },
+          )(widgetTester);
+        },
+      );
+
+      testWidgets(
+        'should search',
+        (widgetTester) async {
+          const product = MockData.product1;
+
+          final category1Products =
+              MockData.getCategoryProducts(MockData.category1);
+
+          final category2Products =
+              MockData.getCategoryProducts(MockData.category2).whereList(
+            (p) => p.title.contains(product.title),
+          );
+
+          final category1 = MockData.category1.capitalize();
+          final category2 = MockData.category2.capitalize();
+
+          await testWidget(
+            setUp: () {
+              final ProductService productService = getService();
+
+              when(productService.getProducts(
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                search: product.title,
+                select: [
+                  ProductField.id,
+                  ProductField.price,
+                  ProductField.thumbnail,
+                  ProductField.title,
+                  ProductField.discountPercentage,
+                ],
+              )).thenAnswer(
+                (_) async => const SuccessApiResponse(
+                  data: [product],
+                  limit: productsLimit,
+                  skip: 0 * productsLimit,
+                  total: 1,
+                ),
+              );
+
+              when(productService.getCategoryProducts(
+                category1,
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                select: [
+                  ProductField.id,
+                  ProductField.price,
+                  ProductField.thumbnail,
+                  ProductField.title,
+                  ProductField.discountPercentage,
+                ],
+              )).thenAnswer(
+                (_) async => SuccessApiResponse(
+                  data: category1Products,
+                  limit: productsLimit,
+                  skip: 0 * productsLimit,
+                  total: category1Products.length,
+                ),
+              );
+
+              when(productService.getCategoryProducts(
+                category2,
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                select: [
+                  ProductField.id,
+                  ProductField.price,
+                  ProductField.thumbnail,
+                  ProductField.title,
+                  ProductField.discountPercentage,
+                ],
+              )).thenAnswer(
+                (_) async => SuccessApiResponse(
+                  data: category2Products,
+                  limit: productsLimit,
+                  skip: 0 * productsLimit,
+                  total: category2Products.length,
+                ),
+              );
+            },
+            (helper) async {
+              Text category1Text = helper.descendantTextByType(
+                ofType: AppTabBar,
+                text: category1,
+                skipOffstage: false,
+              );
+
+              await helper.tapWidget(category1Text, ensureVisible: true);
+
+              await helper.enterTextByType(
+                SearchBar,
+                product.title,
+              );
+
+              final context = helper.getBuildContext(SearchBar);
+
+              final tabController = DefaultTabController.of(context);
+
+              expect(tabController.index, 0);
+
+              await helper.ensureVisible('ProductItem#${product.id}');
+
+              helper.text('1 product', skipOffstage: false);
+
+              category1Text = helper.descendantTextByType(
+                ofType: AppTabBar,
+                text: category1,
+                skipOffstage: false,
+              );
+
+              await helper.tapWidget(category1Text, ensureVisible: true);
+
+              await helper.ensureVisible('ProductItem#${product.id}');
+
+              helper.text('1 product', skipOffstage: false);
+
+              final Text category2Text = helper.descendantTextByType(
+                ofType: AppTabBar,
+                text: category2,
+                skipOffstage: false,
+              );
+
+              await helper.tapWidget(category2Text, ensureVisible: true);
+
+              helper.noWidgetByType(ProductItem);
+
+              helper.text('No products found', skipOffstage: false);
+
+              await helper.enterTextByType(
+                SearchBar,
+                '',
+              );
 
               for (var product in products) {
                 await helper.ensureVisible('ProductItem#${product.id}');

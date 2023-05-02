@@ -19,6 +19,17 @@ class InfoAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool? success = request.data;
 
+    String? titleText = request.title;
+    String graphic = '❕';
+
+    if (success == true) {
+      titleText = 'Hooray!';
+      graphic = '🎉';
+    } else if (success == false) {
+      titleText = 'Oops!';
+      graphic = '💥';
+    }
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       backgroundColor: Colors.white,
@@ -36,7 +47,7 @@ class InfoAlertDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.title!,
+                        titleText!,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w900),
                       ),
@@ -63,7 +74,7 @@ class InfoAlertDialog extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      success ? '🎉' : '💥',
+                      graphic,
                       style: const TextStyle(fontSize: 30),
                     ),
                   )

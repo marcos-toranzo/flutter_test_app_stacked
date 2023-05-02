@@ -16,9 +16,7 @@ void main() {
         mockDatabaseService: true,
         onDatabaseServiceRegistered: (databaseService) {
           when(databaseService.get(tableName: CartEntry.tableName)).thenAnswer(
-            (_) async {
-              return MockData.cartEntries.mapList((p0) => p0.toMap());
-            },
+            (_) async => MockData.cartEntries.mapList((p0) => p0.toMap()),
           );
         },
       );
@@ -51,9 +49,7 @@ void main() {
         when(databaseService.insert(
           tableName: CartEntry.tableName,
           model: CartEntry(productId: productId),
-        )).thenAnswer((_) async {
-          return cartId;
-        });
+        )).thenAnswer((_) async => cartId);
 
         final result = await cartService.addProduct(productId);
 
@@ -84,9 +80,7 @@ void main() {
                 column: CartEntry.columnProductId, value: cartEntry.productId),
           ],
         )).thenAnswer(
-          (_) async {
-            return [cartEntry.toMap()];
-          },
+          (_) async => [cartEntry.toMap()],
         );
 
         final editedEntry = cartEntry.copyWithCount(cartEntry.count + 1);
@@ -98,9 +92,7 @@ void main() {
             WhereEqualClause(
                 column: DatabaseModel.columnId, value: cartEntry.id),
           ],
-        )).thenAnswer((_) async {
-          return 1;
-        });
+        )).thenAnswer((_) async => 1);
 
         final result = await cartService.addProduct(cartEntry.productId);
 
@@ -131,9 +123,7 @@ void main() {
                 column: CartEntry.columnProductId, value: cartEntry.productId),
           ],
         )).thenAnswer(
-          (_) async {
-            return [cartEntry.toMap()];
-          },
+          (_) async => [cartEntry.toMap()],
         );
 
         when(databaseService.delete(
@@ -142,9 +132,7 @@ void main() {
             WhereEqualClause(
                 column: DatabaseModel.columnId, value: cartEntry.id),
           ],
-        )).thenAnswer((_) async {
-          return 1;
-        });
+        )).thenAnswer((_) async => 1);
 
         final response = await cartService.removeProduct(cartEntry.productId);
 
@@ -171,9 +159,7 @@ void main() {
                 column: CartEntry.columnProductId, value: cartEntry.productId),
           ],
         )).thenAnswer(
-          (_) async {
-            return [cartEntry.toMap()];
-          },
+          (_) async => [cartEntry.toMap()],
         );
 
         final editedEntry = cartEntry.copyWithCount(cartEntry.count - 1);
@@ -185,9 +171,7 @@ void main() {
             WhereEqualClause(
                 column: DatabaseModel.columnId, value: cartEntry.id),
           ],
-        )).thenAnswer((_) async {
-          return 1;
-        });
+        )).thenAnswer((_) async => 1);
 
         final result = await cartService.removeProduct(cartEntry.productId);
 
@@ -210,9 +194,7 @@ void main() {
         final DatabaseService databaseService = getService();
 
         when(databaseService.delete(tableName: CartEntry.tableName)).thenAnswer(
-          (_) async {
-            return MockData.cartEntries.length;
-          },
+          (_) async => MockData.cartEntries.length,
         );
 
         final result = await cartService.empty();

@@ -381,6 +381,27 @@ class TestHelper {
     return widget;
   }
 
+  T descendantByType<T extends Widget>(
+    Type ofType, {
+    bool skipOffstage = true,
+    void Function(T widget)? expecting,
+  }) {
+    final widget = _getWidget<T>(
+      _findWidget(
+        () => find.descendant(
+          of: find.byType(ofType, skipOffstage: skipOffstage),
+          matching: find.byType(T, skipOffstage: skipOffstage),
+          skipOffstage: skipOffstage,
+        ),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(widget);
+
+    return widget;
+  }
+
   Text descendantText({
     required Widget of,
     required String text,
@@ -391,6 +412,28 @@ class TestHelper {
       _findWidget(
         () => find.descendant(
           of: find.byWidget(of, skipOffstage: skipOffstage),
+          matching: find.text(text, skipOffstage: skipOffstage),
+          skipOffstage: skipOffstage,
+        ),
+        findsOneWidget,
+      ),
+    );
+
+    expecting?.call(textWidget);
+
+    return textWidget;
+  }
+
+  Text descendantTextByType({
+    required Type ofType,
+    required String text,
+    bool skipOffstage = true,
+    void Function(Text textWidget)? expecting,
+  }) {
+    final textWidget = _getWidget<Text>(
+      _findWidget(
+        () => find.descendant(
+          of: find.byType(ofType, skipOffstage: skipOffstage),
           matching: find.text(text, skipOffstage: skipOffstage),
           skipOffstage: skipOffstage,
         ),
@@ -463,6 +506,23 @@ class TestHelper {
   }) async {
     await tester.enterText(
       find.byWidget(widget, skipOffstage: skipOffstage),
+      text,
+    );
+
+    if (pumpAndSettle) {
+      await tester.pumpAndSettle();
+    }
+  }
+
+  Future<void> enterTextByType(
+    Type type,
+    String text, {
+    bool skipOffstage = true,
+    bool warnIfMissed = false,
+    bool pumpAndSettle = true,
+  }) async {
+    await tester.enterText(
+      find.byType(type, skipOffstage: skipOffstage),
       text,
     );
 

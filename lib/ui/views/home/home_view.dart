@@ -44,7 +44,6 @@ class HomeView extends StackedView<HomeViewModel> {
                       _dialogService.showCustomDialog(
                         variant: DialogType.infoAlert,
                         data: false,
-                        title: 'Oops!',
                         description:
                             'Something went wrong trying to fetch the categories.',
                       );
@@ -72,7 +71,6 @@ class HomeView extends StackedView<HomeViewModel> {
                                   _dialogService.showCustomDialog(
                                     variant: DialogType.infoAlert,
                                     data: false,
-                                    title: 'Oops!',
                                     description:
                                         'Something went wrong trying to add product to cart.',
                                   );
@@ -80,7 +78,6 @@ class HomeView extends StackedView<HomeViewModel> {
                                   _dialogService.showCustomDialog(
                                     variant: DialogType.infoAlert,
                                     data: true,
-                                    title: 'Hooray!',
                                     description: 'Product added to cart.',
                                   );
                                 }
@@ -109,7 +106,6 @@ class HomeView extends StackedView<HomeViewModel> {
             _dialogService.showCustomDialog(
               variant: DialogType.infoAlert,
               data: false,
-              title: 'Oops!',
               description:
                   'Something went wrong trying to fetch the categories.',
             );
