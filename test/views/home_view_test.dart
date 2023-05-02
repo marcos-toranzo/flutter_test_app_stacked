@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_test_stacked/services/cart_service.dart';
+import 'package:flutter_app_test_stacked/services/network_service.dart';
+import 'package:flutter_app_test_stacked/services/product_service.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/home_app_bar.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/home_view.dart';
+import 'package:flutter_app_test_stacked/ui/views/home/home_viewmodel.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/product_fetching_result.dart';
 import 'package:flutter_app_test_stacked/ui/views/home/products_list.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/custom_icon.dart';
 import 'package:flutter_app_test_stacked/ui/widgets/product_item.dart';
+import 'package:flutter_app_test_stacked/utils/formatting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 
 import '../helpers/data.dart';
 import '../helpers/test_helpers.dart';
@@ -65,8 +72,7 @@ void main() {
                 ),
               ),
             ),
-            wait: false,
-            settle: false,
+            settleAfterPump: false,
             (helper) async {
               final TabBar tabBar = helper.widgetByType();
 
@@ -244,8 +250,7 @@ void main() {
               ),
             ),
           ),
-          wait: false,
-          settle: false,
+          settleAfterPump: false,
           (helper) async {
             final AppTabBar appTabBar = helper.widgetByType();
 
@@ -343,7 +348,7 @@ void main() {
       testWidgets(
         'should fetch products by step',
         (widgetTester) async {
-          final products = MockData.products;
+          final products = MockData.products.take(10).toList();
 
           const productsLimit = 5;
           int currentPage = 0;
@@ -365,8 +370,7 @@ void main() {
               },
             ),
             mockNetworkImage: true,
-            wait: false,
-            settle: false,
+            settleAfterPump: false,
             (helper) async {
               helper.widgetByType<CircularProgressIndicator>();
 
@@ -467,6 +471,91 @@ void main() {
                 );
 
                 expect(productTrailingTappedMap[product.id], true);
+              }
+            },
+          )(widgetTester);
+        },
+      );
+    });
+
+    group('View -', () {
+      setUpAll(() {
+        testWidgetSetUpAll(
+          screenBuilder: (_) => HomeView(),
+          setUpDialogUi: true,
+        );
+      });
+
+      tearDownAll(testWidgetReset);
+
+      setUp(() {
+        setUpServices(
+          mockCartService: true,
+          mockNavigationService: true,
+          mockProductService: true,
+        );
+      });
+
+      tearDown(tearDownServices);
+
+      testWidgets(
+        'should display components',
+        (widgetTester) async {
+          final products = MockData.products.take(10).toList();
+
+          await testWidget(
+            mockNetworkImage: true,
+            setUp: () {
+              final ProductService productService = getService();
+
+              when(productService.getProducts(
+                limit: productsLimit,
+                skip: 0 * productsLimit,
+                search: '',
+                select: [
+                  ProductField.id,
+                  ProductField.price,
+                  ProductField.thumbnail,
+                  ProductField.title,
+                  ProductField.discountPercentage,
+                ],
+              )).thenAnswer(
+                (_) async => SuccessApiResponse(
+                  data: products,
+                  limit: productsLimit,
+                  skip: 0 * productsLimit,
+                  total: products.length,
+                ),
+              );
+
+              when(productService.getCategories()).thenAnswer(
+                (_) async => SuccessApiResponse(
+                  data: MockData.categories,
+                ),
+              );
+
+              final CartService cartService = getService();
+
+              when(cartService.count).thenReturn(MockData.cartCount);
+            },
+            (helper) async {
+              final ShoppingCartAppBarButton shoppingCartAppBarButton =
+                  helper.widgetByType();
+
+              expect(shoppingCartAppBarButton.count, MockData.cartCount);
+
+              final AppTabBar appTabBar = helper.widgetByType();
+
+              expect(appTabBar.loading, false);
+              expect(appTabBar.tabsLabels, [
+                allCategories,
+                ...MockData.categories.map((e) => e.capitalize())
+              ]);
+
+              helper.widgetByType<ProductsList>();
+
+              for (var product in products) {
+                await helper.ensureVisible('ProductItem#${product.id}');
               }
             },
           )(widgetTester);
