@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_test_stacked/ui/common/app_colors.dart';
 import 'package:flutter_app_test_stacked/ui/common/ui_helpers.dart';
 import 'package:stacked_services/stacked_services.dart';
 
@@ -51,11 +50,13 @@ class InfoAlertDialog extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w900),
                       ),
-                      verticalSpaceTiny,
+                      const SizedBox(height: 5),
                       Text(
                         request.description!,
-                        style:
-                            const TextStyle(fontSize: 14, color: kcMediumGrey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF474A54),
+                        ),
                         maxLines: 3,
                         softWrap: true,
                       ),
@@ -80,7 +81,7 @@ class InfoAlertDialog extends StatelessWidget {
                   )
               ],
             ),
-            verticalSpaceMedium,
+            const SizedBox(height: 25),
             GestureDetector(
               onTap: () => completer(DialogResponse(
                 confirmed: true,
@@ -99,7 +100,7 @@ class InfoAlertDialog extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: circularBorderRadius,
                 ),
               ),
             )
