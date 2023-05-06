@@ -55,7 +55,6 @@ class ProductView extends StackedView<ProductViewModel> {
                             _dialogService.showCustomDialog(
                               variant: DialogType.infoAlert,
                               data: false,
-                              title: 'Oops!',
                               description:
                                   'Something went wrong trying to add product to cart.',
                             );
@@ -63,7 +62,6 @@ class ProductView extends StackedView<ProductViewModel> {
                             _dialogService.showCustomDialog(
                               variant: DialogType.infoAlert,
                               data: true,
-                              title: 'Hooray!',
                               description: 'Product added to cart.',
                             );
                           }

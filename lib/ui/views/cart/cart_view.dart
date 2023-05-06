@@ -36,6 +36,7 @@ class CartView extends StackedView<CartViewModel> {
             : '${viewModel.count} product${viewModel.count != 1 ? 's' : ''}',
         buttons: [
           CustomAppBarButton(
+            key: const ValueKey('cartViewEmptyCartButton'),
             icon: CustomIcon.trash(),
             onPressed: () {
               viewModel.onEmptyCart().then(
@@ -44,7 +45,6 @@ class CartView extends StackedView<CartViewModel> {
                     _dialogService.showCustomDialog(
                       variant: DialogType.infoAlert,
                       data: false,
-                      title: 'Oops!',
                       description: 'Something went wrong trying to clear cart.',
                     );
                   }
@@ -90,6 +90,7 @@ class CartView extends StackedView<CartViewModel> {
                         final product = products[index];
 
                         return ProductItem(
+                          key: ValueKey('CartProduct#${product.id}'),
                           horizontalPadding: 18,
                           product: product,
                           showDiscount: false,
@@ -106,7 +107,6 @@ class CartView extends StackedView<CartViewModel> {
                                     _dialogService.showCustomDialog(
                                       variant: DialogType.infoAlert,
                                       data: false,
-                                      title: 'Oops!',
                                       description:
                                           'Something went wrong trying to add product.',
                                     );
@@ -121,9 +121,8 @@ class CartView extends StackedView<CartViewModel> {
                                     _dialogService.showCustomDialog(
                                       variant: DialogType.infoAlert,
                                       data: false,
-                                      title: 'Oops!',
                                       description:
-                                          'Something went wrong trying to remove product',
+                                          'Something went wrong trying to remove product.',
                                     );
                                   }
                                 },

@@ -397,7 +397,6 @@ void main() {
 
               final InfoAlertDialog infoAlertDialog = helper.widgetByType();
 
-              expect(infoAlertDialog.request.title, 'Hooray!');
               expect(infoAlertDialog.request.description,
                   'Product added to cart.');
               expect(infoAlertDialog.request.data, true);
@@ -425,7 +424,6 @@ void main() {
 
               final InfoAlertDialog infoAlertDialog = helper.widgetByType();
 
-              expect(infoAlertDialog.request.title, 'Oops!');
               expect(infoAlertDialog.request.description,
                   'Something went wrong trying to add product to cart.');
               expect(infoAlertDialog.request.data, false);
